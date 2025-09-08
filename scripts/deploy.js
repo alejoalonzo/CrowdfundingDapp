@@ -1,18 +1,18 @@
 const { ethers } = require("hardhat");
 
 async function main() {
-  console.log("🚀 Iniciando deployment...");
+  console.log("🚀 Starting deployment...");
 
-  // Obtener el deployer account
+  // Get the deployer account
   const [deployer] = await ethers.getSigners();
-  console.log("📝 Deploying contracts con la cuenta:", deployer.address);
+  console.log("📝 Deploying contracts with account:", deployer.address);
 
-  // Verificar balance
+  // Check balance
   const balance = await ethers.provider.getBalance(deployer.address);
-  console.log("💰 Balance de la cuenta:", ethers.formatEther(balance), "ETH");
+  console.log("💰 Account balance:", ethers.formatEther(balance), "ETH");
 
   // Deploy CrowdfundingFactory
-  console.log("\n🏭 Deployando CrowdfundingFactory...");
+  console.log("\n🏭 Deploying CrowdfundingFactory...");
   const CrowdfundingFactory = await ethers.getContractFactory(
     "CrowdfundingFactory"
   );
@@ -24,36 +24,36 @@ async function main() {
   console.log("✅ CrowdfundingFactory deployed to:", factoryAddress);
   console.log("👤 Factory Owner:", await factory.owner());
 
-  // Verificar que el deployment fue exitoso
+  // Verify that deployment was successful
   const isPaused = await factory.paused();
   console.log("⏸️  Factory Paused:", isPaused);
 
-  // Opcional: Crear una campaña de prueba
-  console.log("\n🎯 Creando una campaña de prueba...");
+  // Optional: Create a test campaign
+  console.log("\n🎯 Creating a test campaign...");
 
   try {
     const tx = await factory.createCampaign(
-      "Mi Primera Campaña",
-      "Esta es una campaña de prueba para demostrar el funcionamiento del sistema",
+      "My First Campaign",
+      "This is a test campaign to demonstrate the system functionality",
       ethers.parseEther("10"), // Goal: 10 ETH
-      30 // 30 días de duración
+      30 // 30 days duration
     );
 
     await tx.wait();
-    console.log("✅ Campaña de prueba creada");
+    console.log("✅ Test campaign created");
 
-    // Obtener todas las campañas
+    // Get all campaigns
     const campaigns = await factory.getAllCampaigns();
-    console.log("📊 Total de campañas:", campaigns.length);
+    console.log("📊 Total campaigns:", campaigns.length);
 
     if (campaigns.length > 0) {
       const firstCampaign = campaigns[0];
-      console.log("🏷️  Primera campaña:");
+      console.log("🏷️  First campaign:");
       console.log("   - Address:", firstCampaign.campaignAddress);
       console.log("   - Owner:", firstCampaign.owner);
       console.log("   - Name:", firstCampaign.name);
 
-      // Obtener más detalles de la campaña
+      // Get more campaign details
       const Campaign = await ethers.getContractFactory("Crowdfunding");
       const campaignContract = Campaign.attach(firstCampaign.campaignAddress);
 
@@ -74,11 +74,11 @@ async function main() {
       );
     }
   } catch (error) {
-    console.error("❌ Error creando campaña de prueba:", error.message);
+    console.error("❌ Error creating test campaign:", error.message);
   }
 
-  // Resumen del deployment
-  console.log("\n📋 RESUMEN DEL DEPLOYMENT:");
+  // Deployment summary
+  console.log("\n📋 DEPLOYMENT SUMMARY:");
   console.log("=".repeat(50));
   console.log("🏭 CrowdfundingFactory:", factoryAddress);
   console.log("👤 Deployer:", deployer.address);
@@ -86,7 +86,7 @@ async function main() {
   console.log("🔗 Chain ID:", (await ethers.provider.getNetwork()).chainId);
   console.log("=".repeat(50));
 
-  // Guardar addresses en un archivo de configuración
+  // Save addresses in a configuration file
   const deploymentInfo = {
     network: (await ethers.provider.getNetwork()).name,
     chainId: (await ethers.provider.getNetwork()).chainId.toString(),
@@ -95,17 +95,17 @@ async function main() {
     deployedAt: new Date().toISOString(),
   };
 
-  console.log("\n💾 Deployment info guardada:");
+  console.log("\n💾 Deployment info saved:");
   console.log(JSON.stringify(deploymentInfo, null, 2));
 }
 
 main()
   .then(() => {
-    console.log("\n🎉 Deployment completado exitosamente!");
+    console.log("\n🎉 Deployment completed successfully!");
     process.exit(0);
   })
   .catch(error => {
-    console.error("\n💥 Error en el deployment:");
+    console.error("\n💥 Error in deployment:");
     console.error(error);
     process.exit(1);
   });

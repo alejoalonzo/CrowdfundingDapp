@@ -1,8 +1,6 @@
-// hardhat.config.js (local limpio + sepolia listo)
+// hardhat.config.js - Local development setup
 require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
-
-const { SEPOLIA_RPC_URL, SEPOLIA_PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env;
 
 module.exports = {
   solidity: {
@@ -10,13 +8,18 @@ module.exports = {
     settings: { optimizer: { enabled: true, runs: 200 } },
   },
   networks: {
-    hardhat: { chainId: 31337 }, // LOCAL LIMPIO (no se conecta a sepolia)
-    localhost: { url: "http://127.0.0.1:8545" },
-    sepolia: {
-      // se usa SOLO si tú lo eliges con --network sepolia
-      url: SEPOLIA_RPC_URL || "",
-      accounts: SEPOLIA_PRIVATE_KEY ? [SEPOLIA_PRIVATE_KEY] : [],
+    hardhat: {
+      chainId: 31337, // Default Hardhat network for testing
     },
+    localhost: {
+      url: "http://127.0.0.1:8545", // Your local Hardhat node
+      chainId: 31337,
+    },
+    // Sepolia configuration (commented out for now)
+    // sepolia: {
+    //   url: process.env.SEPOLIA_RPC_URL || "",
+    //   accounts: process.env.SEPOLIA_PRIVATE_KEY ? [process.env.SEPOLIA_PRIVATE_KEY] : [],
+    // },
   },
-  etherscan: { apiKey: ETHERSCAN_API_KEY || "" },
+  // etherscan: { apiKey: process.env.ETHERSCAN_API_KEY || "" },
 };
