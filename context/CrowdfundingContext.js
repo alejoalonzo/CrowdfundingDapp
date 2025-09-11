@@ -305,7 +305,9 @@ export const CrowdfundingProvider = ({ children }) => {
     } catch (err) {
       console.error("Error updating account:", err);
     }
-  }; // ===== CROWDFUNDING SPECIFIC FUNCTIONS =====
+  };
+
+  // ===== CROWDFUNDING SPECIFIC FUNCTIONS =====
 
   // Load all campaigns from the factory
   const loadAllCampaigns = async (factoryContract = null) => {

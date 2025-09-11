@@ -1,26 +1,250 @@
 @import "tailwindcss";
 
+/* Paleta de colores personalizada */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Colores principales */
+  --color-white: #ffffff;
+  --color-purple: #51256b;
+  --color-blue: #19d8f7;
+  --color-black: #000000;
+  
+  /* Transparencias */
+  --color-black-80: rgba(0, 0, 0, 0.8);
+  --color-white-80: rgba(255, 255, 255, 0.8);
+  --color-cyan-soft: rgba(34, 211, 238, 0.6);
+  --color-cyan-light: rgba(34, 211, 238, 0.3);
+  
+  /* Variables de tema */
+  --background: var(--color-white);
+  --foreground: var(--color-black-80);
+  --primary: var(--color-purple);
+  --accent: var(--color-blue);
+  
+  /* Fuentes */
+  --font-montserrat: "Montserrat", sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Tipografía base */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-montserrat);
+  font-weight: 400;
+}
+
+/* Clases de utilidad para colores */
+.text-white {
+  color: var(--color-white);
+}
+
+.text-white-80 {
+  color: var(--color-white-80);
+}
+
+.text-purple {
+  color: var(--color-purple);
+}
+
+.text-black-80 {
+  color: var(--color-black-80);
+}
+
+/* Botones */
+.btn-primary {
+  background-color: var(--color-blue);
+  color: var(--color-white);
+  border: 1px solid var(--color-blue);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: transparent;
+  color: var(--color-blue);
+  border-color: var(--color-blue);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-purple);
+  border: 1px solid var(--color-purple);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-purple);
+  color: var(--color-white);
+}
+
+/* Bordes */
+.border-blue {
+  border-color: var(--color-blue);
+}
+
+.border-purple {
+  border-color: var(--color-purple);
+}
+
+/* Fondos */
+.bg-blue {
+  background-color: var(--color-blue);
+}
+
+.bg-purple {
+  background-color: var(--color-purple);
+}
+
+.bg-white {
+  background-color: var(--color-white);
+}
+
+/* Tipografía - títulos */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-montserrat);
+  font-weight: 600;
+  color: var(--color-purple);
+}
+
+/* Párrafos sobre fondo blanco */
+p {
+  font-family: var(--font-montserrat);
+  color: var(--color-black-80);
+  line-height: 1.6;
+}
+
+/* Párrafos sobre fondo de color */
+.text-on-colored-bg {
+  color: var(--color-white-80);
+}
+
+/* Enlaces */
+a {
+  color: var(--color-blue);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--color-purple);
+}
+
+/* Cards y contenedores con sombra */
+.card {
+  background: var(--color-white);
+  border: 1px solid var(--color-blue);
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para Home Hero Section */
+.hero-gradient {
+  background: linear-gradient(to right, #818cf8, #22d3ee);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(81, 37, 107, 0.05) 0%, 
+    rgba(25, 216, 247, 0.05) 100%);
+  pointer-events: none;
+}
+
+/* Versión alternativa ultra suave del degradado */
+.hero-gradient-smooth {
+  background: linear-gradient(135deg, 
+    #51256b 0%, 
+    #4a2c66 20%,
+    #423361 40%,
+    #2f4a68 60%,
+    #1fc4e8 80%,
+    #19d8f7 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Triangular bottom shape */
+.triangle-bottom {
+  position: relative;
+}
+
+.triangle-bottom::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-left: 50vw solid transparent;
+  border-right: 50vw solid transparent;
+  border-top: 80px solid transparent;
+  border-bottom: 80px solid var(--color-white);
+  transform: translateY(80px);
+}
+
+/* Alternative triangular shape using clip-path */
+.hero-clip-path {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 180px), 50% calc(100% - 60px), 0 calc(100% - 180px));
+}
+
+/* Animaciones para elementos del hero */
+.fade-in-up {
+  animation: fadeInUp 1s ease-out;
+}
+
+.fade-in-down {
+  animation: fadeInDown 1s ease-out 0.3s both;
+}
+
+.fade-in-left {
+  animation: fadeInLeft 1s ease-out 0.6s both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
