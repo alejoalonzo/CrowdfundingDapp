@@ -8,7 +8,7 @@ const Contact = () => {
     email: '',
     subject: '',
     message: '',
-    projectType: 'general'
+    projectType: ''
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -181,23 +181,20 @@ const Contact = () => {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label className="form-label">Project Type</label>
-                  <select
+                  <input
+                    type="text"
                     name="projectType"
                     value={formData.projectType}
                     onChange={handleInputChange}
-                    className="form-select"
-                  >
-                    <option value="general">General Inquiry</option>
-                    <option value="defi">DeFi Project</option>
-                    <option value="nft">NFT Project</option>
-                    <option value="gaming">Gaming</option>
-                    <option value="partnership">Partnership</option>
-                    <option value="support">Technical Support</option>
-                  </select>
+                    className="form-input"
+                    placeholder="General Inquiry"
+                    required
+                  />
                 </div>
+                
               </div>
 
               <div className="form-group">

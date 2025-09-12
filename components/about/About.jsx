@@ -6,7 +6,7 @@ const About = () => {
   const teamMembers = [
     {
       id: 1,
-      name: "Alex Chen",
+      name: "Alejandro Alonzo",
       role: "Blockchain Architect",
       image: "/images/image1.png",
       bio: "10+ years in distributed systems"
