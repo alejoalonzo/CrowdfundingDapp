@@ -1,0 +1,96 @@
+import React from 'react';
+import Image from 'next/image';
+
+const CampaignCard = ({ 
+  title = "Revolutionary DeFi Platform", 
+  description = "Building the future of decentralized finance with cutting-edge blockchain technology", 
+  currentAmount = "2.5", 
+  targetAmount = "10.0", 
+  daysLeft = "15", 
+  category = "DeFi",
+  backers = "127",
+  image = "/images/example.png",
+  owner = "0x123...abc"
+}) => {
+  const progressPercentage = (parseFloat(currentAmount) / parseFloat(targetAmount)) * 100;
+
+  return (
+    <div className="campaign-card-modern group">
+      {/* Imagen header con overlay gradient */}
+      <div className="card-image-container">
+        <Image
+          src={image}
+          alt={title}
+          fill
+          className="object-cover transition-transform duration-700 group-hover:scale-110"
+        />
+        <div className="card-overlay">
+          <div className="category-badge">
+            <span>{category}</span>
+          </div>
+          <div className="days-left-badge">
+            <div className="days-number">{daysLeft}</div>
+            <div className="days-text">days left</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Contenido de la card */}
+      <div className="card-content">
+        {/* Owner info */}
+        <div className="owner-info">
+          <div className="owner-avatar">
+            <div className="avatar-gradient"></div>
+            <span className="avatar-text">{owner.slice(2, 4).toUpperCase()}</span>
+          </div>
+          <span className="owner-address">{owner}</span>
+        </div>
+
+        {/* Título y descripción */}
+        <h3 className="card-title">{title}</h3>
+        <p className="card-description">{description}</p>
+
+        {/* Progress section */}
+        <div className="progress-section">
+          <div className="progress-bar-container">
+            <div 
+              className="progress-bar"
+              style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+            >
+              <div className="progress-glow"></div>
+            </div>
+          </div>
+          
+          <div className="stats-grid">
+            <div className="stat-item">
+              <span className="stat-value">{currentAmount} ETH</span>
+              <span className="stat-label">Raised</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-value">{targetAmount} ETH</span>
+              <span className="stat-label">Goal</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-value">{backers}</span>
+              <span className="stat-label">Backers</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Action button */}
+        <button className="card-action-button">
+          <span className="button-text">Fund Project</span>
+          <div className="button-glow"></div>
+          <svg className="button-arrow" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Animated border */}
+      <div className="card-border-animation"></div>
+    </div>
+  );
+};
+
+export default CampaignCard;
