@@ -177,9 +177,9 @@ const About = () => {
 
         {/* Decorative Elements */}
         <div className="about-decorations">
-          <div className="floating-element element-1"></div>
+          {/* <div className="floating-element element-1"></div>
           <div className="floating-element element-2"></div>
-          <div className="floating-element element-3"></div>
+          <div className="floating-element element-3"></div> */}
           <div className="grid-pattern"></div>
         </div>
 

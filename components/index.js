@@ -4,6 +4,7 @@ export { default as Navbar } from "./navbar/navbar.jsx";
 export { CampaignGrid } from "./campaigns";
 export { CampaignCard } from "./card";
 export { About } from "./about";
+export { Contact } from "./contact";
 
 // Exportaciones futuras irán aquí:
 // export { default as Header } from './header/header.jsx';
