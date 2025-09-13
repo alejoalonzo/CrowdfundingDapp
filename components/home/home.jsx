@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import Image from 'next/image';
 
@@ -31,6 +33,12 @@ const Home = () => {
           
           <button 
             className="explore-btn group bg-transparent text-white px-8 py-4 rounded-full text-lg font-semibold border-2 border-white transition-all duration-300 transform hover:scale-105 cursor-pointer hover:bg-white"
+            onClick={() => {
+              const campaignsSection = document.querySelector('#campaigns');
+              if (campaignsSection) {
+                campaignsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }}
           >
             Explore Projects
             <span className="inline-block ml-2 transform group-hover:translate-x-1 transition-transform duration-300">→</span>

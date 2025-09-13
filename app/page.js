@@ -7,10 +7,18 @@ import { Contact } from "../components/contact";
 export default function HomePage() {
   return (
     <main>
-      <Home />
-      <CampaignGrid />
-      <About />
-      <Contact />
+      <section id="home">
+        <Home />
+      </section>
+      <section id="campaigns">
+        <CampaignGrid />
+      </section>
+      <section id="about">
+        <About />
+      </section>
+      <section id="contact">
+        <Contact />
+      </section>
     </main>
   );
 }

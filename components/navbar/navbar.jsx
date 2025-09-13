@@ -33,11 +33,10 @@ const Navbar = () => {
   }, [isMenuOpen]);
 
   const navLinks = [
-    { name: 'Home', href: '/', icon: HiHome },
-    { name: 'Campaigns', href: '/campaigns', icon: HiCollection },
-    { name: 'Create', href: '/create', icon: HiPlus },
-    { name: 'About', href: '/about', icon: HiInformationCircle },
-    { name: 'Contact', href: '/contact', icon: HiMail }
+    { name: 'Home', href: '#home', icon: HiHome },
+    { name: 'Campaigns', href: '#campaigns', icon: HiCollection },
+    { name: 'About', href: '#about', icon: HiInformationCircle },
+    { name: 'Contact', href: '#contact', icon: HiMail }
   ];
 
   return (
@@ -60,13 +59,20 @@ const Navbar = () => {
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
-              <Link
+              <a
                 key={link.name}
                 href={link.href}
-                className="nav-link text-white px-3 py-2 rounded-md text-sm font-medium uppercase tracking-wide transition-all duration-300 relative"
+                className="nav-link text-white px-3 py-2 rounded-md text-sm font-medium uppercase tracking-wide transition-all duration-300 relative hover:text-cyan-300 cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const element = document.querySelector(link.href);
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
               >
                 {link.name}
-              </Link>
+              </a>
             ))}
           </div>
 
@@ -133,11 +139,18 @@ const Navbar = () => {
               {navLinks.map((link) => {
                 const IconComponent = link.icon;
                 return (
-                  <Link
+                  <a
                     key={link.name}
                     href={link.href}
-                    className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gradient-to-r hover:from-indigo-50 hover:to-cyan-50 transition-all duration-300 group"
-                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gradient-to-r hover:from-indigo-50 hover:to-cyan-50 transition-all duration-300 group cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const element = document.querySelector(link.href);
+                      if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                      setIsMenuOpen(false);
+                    }}
                   >
                     <div className="p-2 rounded-lg group-hover:scale-110 transition-transform duration-300" style={{backgroundColor: 'rgba(25, 216, 247, 0.1)', border: '1px solid rgba(25, 216, 247, 0.2)'}}>
                       <IconComponent className="h-6 w-6" style={{color: '#19d8f7'}} />
@@ -145,7 +158,7 @@ const Navbar = () => {
                     <span className="text-lg font-medium uppercase tracking-wide group-hover:translate-x-1 transition-transform duration-300" style={{color: '#51256b'}}>
                       {link.name}
                     </span>
-                  </Link>
+                  </a>
                 );
               })}
             </div>

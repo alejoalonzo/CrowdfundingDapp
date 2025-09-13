@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Scroll suave para navegación interna */
+html {
+  scroll-behavior: smooth;
+}
+
 /* Paleta de colores personalizada */
 :root {
   /* Colores principales */
