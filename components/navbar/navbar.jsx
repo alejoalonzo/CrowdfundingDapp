@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Link from 'next/link';
 import { 
   HiHome, 
@@ -10,14 +10,34 @@ import {
   HiMail,
   HiMenuAlt3,
   HiX,
-  HiCreditCard
+  HiCreditCard,
+  HiCheckCircle
 } from 'react-icons/hi';
+import { CrowdfundingContext } from '../../context/CrowdfundingContext';
+import { WalletPopup } from '../popup';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isWalletPopupOpen, setIsWalletPopupOpen] = useState(false);
+  
+  const { account, loading } = useContext(CrowdfundingContext);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const toggleWalletPopup = () => {
+    setIsWalletPopupOpen(!isWalletPopupOpen);
+  };
+
+  const closeWalletPopup = () => {
+    setIsWalletPopupOpen(false);
+  };
+
+  // Format address for display
+  const formatAddress = (address) => {
+    if (!address) return '';
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
   useEffect(() => {
@@ -78,8 +98,32 @@ const Navbar = () => {
 
           {/* Desktop Connect Wallet Button */}
           <div className="hidden md:flex items-center">
-            <button className="px-6 py-2 rounded-full text-white font-semibold border-2 transition-all duration-300 transform hover:scale-105 hover:bg-white hover:text-black" style={{backgroundColor: '#000000', borderColor: '#000000'}}>
-              Connect Wallet
+            <button 
+              onClick={toggleWalletPopup}
+              disabled={loading}
+              className="px-6 py-2 rounded-full font-semibold border-2 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center space-x-2"
+              style={{
+                backgroundColor: account ? '#22c55e' : '#000000',
+                borderColor: account ? '#22c55e' : '#000000',
+                color: 'white'
+              }}
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Loading...</span>
+                </>
+              ) : account ? (
+                <>
+                  <HiCheckCircle className="h-4 w-4" />
+                  <span>{formatAddress(account)}</span>
+                </>
+              ) : (
+                <>
+                  <HiCreditCard className="h-4 w-4" />
+                  <span>Connect Wallet</span>
+                </>
+              )}
             </button>
           </div>
 
@@ -166,12 +210,33 @@ const Navbar = () => {
             {/* Connect Wallet Button */}
             <div className="pt-4 border-t border-gray-100">
               <button 
-                className="w-full flex items-center justify-center space-x-3 px-6 py-4 rounded-xl text-white font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
-                style={{backgroundColor: '#19d8f7'}}
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  toggleWalletPopup();
+                }}
+                disabled={loading}
+                className="w-full flex items-center justify-center space-x-3 px-6 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                style={{
+                  backgroundColor: account ? '#22c55e' : '#19d8f7',
+                  color: 'white'
+                }}
               >
-                <HiCreditCard className="h-5 w-5" />
-                <span>Connect Wallet</span>
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Loading...</span>
+                  </>
+                ) : account ? (
+                  <>
+                    <HiCheckCircle className="h-5 w-5" />
+                    <span>{formatAddress(account)}</span>
+                  </>
+                ) : (
+                  <>
+                    <HiCreditCard className="h-5 w-5" />
+                    <span>Connect Wallet</span>
+                  </>
+                )}
               </button>
             </div>
 
@@ -184,6 +249,12 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+
+      {/* Wallet Popup */}
+      <WalletPopup 
+        isOpen={isWalletPopupOpen} 
+        onClose={closeWalletPopup}
+      />
     </nav>
   );
 };
