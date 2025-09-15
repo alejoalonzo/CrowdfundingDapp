@@ -108,30 +108,39 @@ const Navbar = () => {
             <button 
               onClick={account ? null : toggleWalletPopup} // Solo clickable si no hay account
               disabled={loading}
-              className={`px-6 py-2 rounded-full font-semibold border-2 transition-all duration-300 transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 ${
-                account ? 'cursor-default' : 'cursor-pointer hover:scale-105'
+              className={`relative px-6 py-3 rounded-full font-semibold transition-all duration-300 transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 overflow-hidden group ${
+                account ? 'cursor-default' : 'cursor-pointer hover:scale-105 hover:shadow-lg'
               }`}
               style={{
-                backgroundColor: account ? '#22c55e' : '#000000',
-                borderColor: account ? '#22c55e' : '#000000',
-                color: 'white'
+                background: account 
+                  ? '#000000' 
+                  : 'linear-gradient(135deg, #51256b, #19d8f7)',
+                color: 'white',
+                border: 'none'
               }}
             >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Loading...</span>
-                </>
-              ) : account ? (
-                <>
-                  <HiCheckCircle className="h-4 w-4" />
-                  <span>{formatAddress(account)}</span>
-                </>
-              ) : (
-                <>
-                  <HiCreditCard className="h-4 w-4" />
-                  <span>Connect Wallet</span>
-                </>
+              <span className="relative z-10 flex items-center space-x-2">
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Loading...</span>
+                  </>
+                ) : account ? (
+                  <>
+                    <div className="w-2 h-2 bg-green-400 rounded-full shadow-lg shadow-green-400/50"></div>
+                    <span>{formatAddress(account)}</span>
+                  </>
+                ) : (
+                  <>
+                    <HiCreditCard className="h-4 w-4" />
+                    <span>Connect Wallet</span>
+                  </>
+                )}
+              </span>
+              
+              {/* Glow effect */}
+              {!account && (
+                <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-all duration-600 group-hover:left-[100%]"></div>
               )}
             </button>
             
@@ -139,11 +148,26 @@ const Navbar = () => {
             {account && !loading && (
               <button 
                 onClick={handleDisconnectClick}
-                className="px-4 py-2 rounded-full font-semibold border-2 border-red-400 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 transform hover:scale-105 cursor-pointer flex items-center space-x-2"
+                className="relative w-10 h-10 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 cursor-pointer flex items-center justify-center overflow-hidden group hover:shadow-lg p-0.5"
+                style={{
+                  background: 'linear-gradient(135deg, #51256b, #3d1c52, #2a1338)',
+                  color: '#51256b'
+                }}
                 title="Disconnect Wallet"
               >
-                <HiLogout className="h-4 w-4" />
-                <span className="hidden lg:inline">Disconnect</span>
+                <div 
+                  className="w-full h-full rounded-full flex items-center justify-center"
+                  style={{
+                    background: '#ffffff'
+                  }}
+                >
+                  <span className="relative z-10">
+                    <HiLogout className="h-4 w-4" />
+                  </span>
+                </div>
+                
+                {/* Glow effect */}
+                <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-all duration-600 group-hover:left-[100%] rounded-full"></div>
               </button>
             )}
           </div>
@@ -233,31 +257,40 @@ const Navbar = () => {
               <button 
                 onClick={() => {
                   setIsMenuOpen(false);
-                  toggleWalletPopup();
+                  if (!account) toggleWalletPopup();
+                  else handleDisconnectClick();
                 }}
                 disabled={loading}
-                className="w-full flex items-center justify-center space-x-3 px-6 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="relative w-full flex items-center justify-center space-x-3 px-6 py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer overflow-hidden group"
                 style={{
-                  backgroundColor: account ? '#22c55e' : '#19d8f7',
-                  color: 'white'
+                  background: account 
+                    ? '#000000' 
+                    : 'linear-gradient(135deg, #51256b, #19d8f7)',
+                  color: 'white',
+                  border: 'none'
                 }}
               >
-                {loading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Loading...</span>
-                  </>
-                ) : account ? (
-                  <>
-                    <HiCheckCircle className="h-5 w-5" />
-                    <span>{formatAddress(account)}</span>
-                  </>
-                ) : (
-                  <>
-                    <HiCreditCard className="h-5 w-5" />
-                    <span>Connect Wallet</span>
-                  </>
-                )}
+                <span className="relative z-10 flex items-center space-x-3">
+                  {loading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Loading...</span>
+                    </>
+                  ) : account ? (
+                    <>
+                      <div className="w-2 h-2 bg-green-400 rounded-full shadow-lg shadow-green-400/50"></div>
+                      <span>{formatAddress(account)}</span>
+                    </>
+                  ) : (
+                    <>
+                      <HiCreditCard className="h-5 w-5" />
+                      <span>Connect Wallet</span>
+                    </>
+                  )}
+                </span>
+                
+                {/* Glow effect */}
+                <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-all duration-600 group-hover:left-[100%]"></div>
               </button>
 
               {/* Disconnect Button Mobile - Solo visible cuando está conectado */}
@@ -265,13 +298,28 @@ const Navbar = () => {
                 <button 
                   onClick={() => {
                     setIsMenuOpen(false);
-                    handleDisconnect();
+                    handleDisconnectClick();
                   }}
-                  className="w-full flex items-center justify-center space-x-3 px-6 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg cursor-pointer border-2 border-red-400 text-red-500 hover:bg-red-500 hover:text-white"
-                  style={{backgroundColor: 'transparent'}}
+                  className="relative w-full flex items-center justify-center space-x-3 px-6 py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg cursor-pointer overflow-hidden group p-0.5"
+                  style={{
+                    background: 'linear-gradient(135deg, #51256b, #3d1c52, #2a1338)',
+                    color: '#51256b'
+                  }}
                 >
-                  <HiLogout className="h-5 w-5" />
-                  <span>Disconnect Wallet</span>
+                  <div 
+                    className="w-full h-full rounded-full flex items-center justify-center space-x-3 px-6 py-4"
+                    style={{
+                      background: '#ffffff'
+                    }}
+                  >
+                    <span className="relative z-10 flex items-center space-x-3">
+                      <HiLogout className="h-5 w-5" />
+                      <span>Disconnect Wallet</span>
+                    </span>
+                  </div>
+                  
+                  {/* Glow effect */}
+                  <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-all duration-600 group-hover:left-[100%] rounded-full"></div>
                 </button>
               )}
             </div>
