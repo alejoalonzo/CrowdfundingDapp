@@ -17,6 +17,7 @@ import {
 } from 'react-icons/hi';
 import { CrowdfundingContext } from '../../context/CrowdfundingContext';
 import { WalletPopup } from '../popup';
+import { ClientOnly } from '../../hooks/useHydration';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -76,14 +77,13 @@ const Navbar = () => {
     { name: 'Contact', href: '#contact', icon: HiMail }
   ];
 
-  // Add Dashboard link only when wallet is connected and component is mounted
-  const navLinks = mounted && account 
-    ? [
-        ...baseNavLinks.slice(0, 2), // Home y Campaigns
-        { name: 'Dashboard', href: '/dashboard', icon: HiPlus },
-        ...baseNavLinks.slice(2) // About y Contact
-      ]
-    : baseNavLinks;
+  // Always render base links to avoid hydration mismatch
+  // Dashboard link visibility is controlled by CSS opacity
+  const allNavLinks = [
+    ...baseNavLinks.slice(0, 2), // Home y Campaigns
+    { name: 'Dashboard', href: '/dashboard', icon: HiPlus, requiresWallet: true },
+    ...baseNavLinks.slice(2) // About y Contact
+  ];
 
   return (
     <nav className={`${
@@ -110,8 +110,13 @@ const Navbar = () => {
 
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => 
-              link.href.startsWith('/') ? (
+            {allNavLinks.map((link) => {
+              // Hide dashboard link if wallet not connected, but always render
+              if (link.requiresWallet && !account) {
+                return null;
+              }
+              
+              return link.href.startsWith('/') ? (
                 <Link
                   key={link.name}
                   href={link.href}
@@ -148,8 +153,8 @@ const Navbar = () => {
                 >
                   {link.name}
                 </a>
-              )
-            )}
+              );
+            })}
           </div>
 
           {/* Desktop Connect Wallet Button */}
@@ -163,7 +168,7 @@ const Navbar = () => {
               }`}
               style={{
                 background: account 
-                  ? (isDashboard ? 'linear-gradient(135deg, #7c3aed, #3b82f6)' : '#000000')
+                  ? (isDashboard ? '#000000' : '#000000')
                   : 'linear-gradient(135deg, #51256b, #19d8f7)',
                 color: 'white',
                 border: 'none'
@@ -281,7 +286,12 @@ const Navbar = () => {
           <div className="px-6 py-8" style={{backgroundColor: '#ffffff'}}>
             {/* Navigation Links */}
             <div className="space-y-2 mb-8">
-              {navLinks.map((link) => {
+              {allNavLinks.map((link) => {
+                // Hide dashboard link if wallet not connected, but always render structure
+                if (link.requiresWallet && !account) {
+                  return null;
+                }
+                
                 const IconComponent = link.icon;
                 return link.href.startsWith('/') ? (
                   <Link
@@ -376,23 +386,18 @@ const Navbar = () => {
                     setIsMenuOpen(false);
                     handleDisconnectClick();
                   }}
-                  className="relative w-full flex items-center justify-center space-x-3 px-6 py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg cursor-pointer overflow-hidden group p-0.5"
+                  className="relative w-full flex items-center justify-center space-x-3 px-6 py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg cursor-pointer overflow-hidden group"
                   style={{
-                    background: 'linear-gradient(135deg, #51256b, #3d1c52, #2a1338)',
-                    color: '#51256b'
+                    background: 'linear-gradient(135deg, #51256b, #19d8f7)',
+                    color: 'white',
+                    border: 'none'
                   }}
+                  title="Disconnect Wallet"
                 >
-                  <div 
-                    className="w-full h-full rounded-full flex items-center justify-center space-x-3 px-6 py-4"
-                    style={{
-                      background: '#ffffff'
-                    }}
-                  >
-                    <span className="relative z-10 flex items-center space-x-3">
-                      <HiLogout className="h-5 w-5" />
-                      <span>Disconnect Wallet</span>
-                    </span>
-                  </div>
+                  <span className="relative z-10 flex items-center space-x-3">
+                    <HiLogout className="h-5 w-5" />
+                    <span>Disconnect Wallet</span>
+                  </span>
                   
                   {/* Glow effect */}
                   <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-all duration-600 group-hover:left-[100%] rounded-full"></div>

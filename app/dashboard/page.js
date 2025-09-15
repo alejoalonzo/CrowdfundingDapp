@@ -41,10 +41,10 @@ const Dashboard = () => {
 
   // Load user campaigns on mount
   useEffect(() => {
-    if (account) {
+    if (account && mounted) {
       loadUserCampaigns();
     }
-  }, [account, loadUserCampaigns]);
+  }, [account, mounted, loadUserCampaigns]);
 
   const handleCreateCampaign = async e => {
     e.preventDefault();
@@ -70,10 +70,12 @@ const Dashboard = () => {
   // Show loading while mounting or while checking account
   if (!mounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="text-gray-600 mt-4">Loading...</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-[#19d8f7]/5 pt-24">
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#51256b] mx-auto"></div>
+            <p className="text-gray-600 mt-4">Loading...</p>
+          </div>
         </div>
       </div>
     );
@@ -81,41 +83,43 @@ const Dashboard = () => {
 
   if (!account) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-lg text-gray-600">
-            Please connect your wallet to access the dashboard.
-          </p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-[#19d8f7]/5 pt-24">
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-lg text-gray-600">
+              Please connect your wallet to access the dashboard.
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 pt-24">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-[#19d8f7]/5 pt-24">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-gray-100 sticky top-20 z-40">
-        <div className="container mx-auto px-6 py-8">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-4 md:px-6 py-4 md:py-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
+              <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-[#51256b] to-[#19d8f7] bg-clip-text text-transparent">
                 Dashboard
               </h1>
-              <p className="text-gray-600 mt-2 text-lg">
+              <p className="text-gray-600 mt-1 md:mt-2 text-sm md:text-lg">
                 Welcome back,{" "}
-                <span className="font-medium text-purple-600">
+                <span className="font-medium text-[#51256b]">
                   {account?.slice(0, 6)}...{account?.slice(-4)}
                 </span>
               </p>
             </div>
 
             {/* Stats Card */}
-            <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-8 py-6 rounded-2xl shadow-lg">
+            <div className="bg-gradient-to-r from-[#51256b] to-[#19d8f7] text-white px-4 py-3 md:px-8 md:py-6 rounded-xl md:rounded-2xl shadow-lg self-start md:self-auto">
               <div className="text-center">
-                <div className="text-3xl font-bold">
+                <div className="text-xl md:text-3xl font-bold">
                   {userCampaigns?.length || 0}
                 </div>
-                <div className="text-purple-100 text-sm font-medium">
+                <div className="text-white/80 text-xs md:text-sm font-medium">
                   My Campaigns
                 </div>
               </div>
@@ -124,33 +128,33 @@ const Dashboard = () => {
         </div>
       </div>{" "}
       {/* Navigation Tabs */}
-      <div className="container mx-auto px-6 py-6">
+      <div className="container mx-auto px-4 py-4 md:px-6 md:py-6">
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-2 shadow-lg border border-gray-100">
-          <nav className="flex space-x-2">
+          <nav className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
             <button
               onClick={() => setActiveTab("my-campaigns")}
-              className={`flex-1 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 ${
+              className={`px-4 py-3 md:px-8 md:py-4 rounded-xl text-base md:text-lg font-semibold transition-all duration-300 ${
                 activeTab === "my-campaigns"
-                  ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg transform scale-[1.02]"
-                  : "text-gray-600 hover:text-purple-600 hover:bg-purple-50"
+                  ? "bg-gradient-to-r from-[#51256b] to-[#19d8f7] text-white shadow-lg transform scale-[1.02]"
+                  : "text-gray-600 hover:text-[#51256b] hover:bg-[#51256b]/10"
               }`}
             >
               <div className="flex items-center justify-center space-x-2">
-                <HiCollection className="h-5 w-5" />
+                <HiCollection className="h-4 w-4 md:h-5 md:w-5" />
                 <span>My Campaigns</span>
               </div>
             </button>
 
             <button
               onClick={() => setActiveTab("create-campaign")}
-              className={`flex-1 px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 ${
+              className={`px-4 py-3 md:px-8 md:py-4 rounded-xl text-base md:text-lg font-semibold transition-all duration-300 ${
                 activeTab === "create-campaign"
-                  ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg transform scale-[1.02]"
-                  : "text-gray-600 hover:text-purple-600 hover:bg-purple-50"
+                  ? "bg-gradient-to-r from-[#51256b] to-[#19d8f7] text-white shadow-lg transform scale-[1.02]"
+                  : "text-gray-600 hover:text-[#51256b] hover:bg-[#51256b]/10"
               }`}
             >
               <div className="flex items-center justify-center space-x-2">
-                <HiPlus className="h-5 w-5" />
+                <HiPlus className="h-4 w-4 md:h-5 md:w-5" />
                 <span>Create Campaign</span>
               </div>
             </button>
@@ -163,23 +167,23 @@ const Dashboard = () => {
         {activeTab === "my-campaigns" && (
           <div>
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-[#51256b] to-[#19d8f7] bg-clip-text text-transparent">
                 My Campaigns
               </h2>
-              <button
+              {/* <button
                 onClick={() => setActiveTab("create-campaign")}
-                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
+                className="bg-gradient-to-r from-[#51256b] to-[#19d8f7] hover:from-[#4a2357] hover:to-[#17c3e8] text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
               >
                 <HiPlus className="h-5 w-5" />
                 <span>New Campaign</span>
-              </button>
+              </button> */}
             </div>
 
             {/* Loading State */}
             {campaignsLoading ? (
               <div className="text-center py-16">
                 <div className="relative inline-flex">
-                  <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-500 rounded-full animate-spin"></div>
+                  <div className="w-16 h-16 border-4 border-[#19d8f7]/20 border-t-[#51256b] rounded-full animate-spin"></div>
                 </div>
                 <p className="text-gray-600 mt-6 text-lg">
                   Loading your campaigns...
@@ -211,8 +215,8 @@ const Dashboard = () => {
             ) : (
               /* Empty State */
               <div className="text-center py-20">
-                <div className="bg-gradient-to-br from-purple-100 to-blue-100 rounded-full w-32 h-32 mx-auto mb-8 flex items-center justify-center">
-                  <HiCube className="h-16 w-16 text-purple-500" />
+                <div className="bg-gradient-to-br from-[#51256b]/10 to-[#19d8f7]/10 rounded-full w-32 h-32 mx-auto mb-8 flex items-center justify-center">
+                  <HiCube className="h-16 w-16 text-[#51256b]" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">
                   No campaigns yet
@@ -223,7 +227,7 @@ const Dashboard = () => {
                 </p>
                 <button
                   onClick={() => setActiveTab("create-campaign")}
-                  className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-3 mx-auto text-lg"
+                  className="bg-gradient-to-r from-[#51256b] to-[#19d8f7] hover:from-[#4a2357] hover:to-[#17c3e8] text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-3 mx-auto text-lg"
                 >
                   <HiPlus className="h-6 w-6" />
                   <span>Create Your First Campaign</span>
@@ -238,7 +242,7 @@ const Dashboard = () => {
           <div>
             <div className="max-w-3xl mx-auto">
               <div className="mb-10 text-center">
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent mb-4">
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-[#51256b] to-[#19d8f7] bg-clip-text text-transparent mb-4">
                   Create New Campaign
                 </h2>
                 <p className="text-gray-600 text-lg max-w-2xl mx-auto">
@@ -287,7 +291,7 @@ const Dashboard = () => {
                         value={formData.name}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:bg-white transition-all duration-200"
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#51256b] focus:border-[#51256b] focus:bg-white transition-all duration-200"
                         placeholder="Enter a compelling campaign name"
                       />
                     </div>
@@ -303,7 +307,7 @@ const Dashboard = () => {
                         onChange={handleInputChange}
                         required
                         rows={4}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:bg-white transition-all duration-200 resize-none"
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#51256b] focus:border-[#51256b] focus:bg-white transition-all duration-200 resize-none"
                         placeholder="Describe your campaign, its goals, and how funds will be used..."
                       />
                       <p className="text-xs text-gray-500 mt-1">
@@ -330,7 +334,7 @@ const Dashboard = () => {
                               }
                             }}
                             required
-                            className="w-full px-4 py-3 pl-12 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:bg-white transition-all duration-200"
+                            className="w-full px-4 py-3 pl-12 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#51256b] focus:border-[#51256b] focus:bg-white transition-all duration-200"
                             placeholder="10.00"
                           />
                           <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
@@ -364,7 +368,7 @@ const Dashboard = () => {
                               }
                             }}
                             required
-                            className="w-full px-4 py-3 pr-16 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:bg-white transition-all duration-200"
+                            className="w-full px-4 py-3 pr-16 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#51256b] focus:border-[#51256b] focus:bg-white transition-all duration-200"
                             placeholder="30"
                           />
                           <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
@@ -391,7 +395,7 @@ const Dashboard = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-8 py-3 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 disabled:from-gray-300 disabled:to-gray-400 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed flex items-center space-x-3 min-w-[180px] justify-center"
+                    className="px-8 py-3 bg-gradient-to-r from-[#51256b] to-[#19d8f7] hover:from-[#4a2357] hover:to-[#17c3e8] disabled:from-gray-300 disabled:to-gray-400 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed flex items-center space-x-3 min-w-[180px] justify-center"
                   >
                     {loading ? (
                       <>
