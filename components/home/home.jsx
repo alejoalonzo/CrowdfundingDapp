@@ -1,9 +1,30 @@
 "use client";
 
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { CrowdfundingContext } from '../../context/CrowdfundingContext';
+import { WalletPopup } from '../popup';
 
 const Home = () => {
+  const router = useRouter();
+  const { account } = useContext(CrowdfundingContext);
+  const [isWalletPopupOpen, setIsWalletPopupOpen] = useState(false);
+
+  const handleCreateCampaignClick = () => {
+    if (account) {
+      // Si tiene wallet conectada, ir al dashboard en el tab de create-campaign
+      router.push('/dashboard?tab=create-campaign');
+    } else {
+      // Si no tiene wallet conectada, mostrar popup de conectar
+      setIsWalletPopupOpen(true);
+    }
+  };
+
+  const closeWalletPopup = () => {
+    setIsWalletPopupOpen(false);
+  };
+
   return (
     <section className="hero-gradient hero-clip-path min-h-screen flex items-center justify-center relative pt-20 md:pt-24">
       {/* Main content */}
@@ -24,6 +45,7 @@ const Home = () => {
         {/* Action buttons */}
         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-4 fade-in-left">
           <button 
+            onClick={handleCreateCampaignClick}
             className="group bg-white px-8 py-4 rounded-full text-lg font-semibold border-2 border-white transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer hover:bg-transparent hover:text-white" 
             style={{color: '#51256b'}}
           >
@@ -66,6 +88,12 @@ const Home = () => {
           <div className="w-1 h-3 bg-gray-600 rounded-full mt-2 animate-pulse"></div>
         </div>
       </div>
+
+      {/* Wallet Popup */}
+      <WalletPopup 
+        isOpen={isWalletPopupOpen} 
+        onClose={closeWalletPopup}
+      />
     </section>
   );
 };

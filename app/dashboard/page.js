@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useContext } from "react";
+import { useSearchParams } from "next/navigation";
 import { CrowdfundingContext } from "../../context/CrowdfundingContext";
 import { HiPlus, HiCollection, HiCube, HiTrendingUp } from "react-icons/hi";
 import { CampaignCard } from "../../components/card";
 
 const Dashboard = () => {
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState("my-campaigns");
   const [mounted, setMounted] = useState(false);
 
@@ -30,7 +32,13 @@ const Dashboard = () => {
   // Handle mounting to avoid hydration errors
   useEffect(() => {
     setMounted(true);
-  }, []);
+
+    // Check URL parameters for tab selection
+    const tab = searchParams.get("tab");
+    if (tab === "create-campaign") {
+      setActiveTab("create-campaign");
+    }
+  }, [searchParams]);
 
   // Redirect to home if not connected (only after mounting)
   useEffect(() => {
