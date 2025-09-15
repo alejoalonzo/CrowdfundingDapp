@@ -260,13 +260,23 @@ a:hover {
 }
 
 /* Navbar styles */
-.nav-link {
+.nav-link:not(.dashboard-link) {
   color: white !important;
 }
 
-.nav-link:hover {
+.nav-link:not(.dashboard-link):hover {
   transform: scale(1.1);
   color: white !important;
+}
+
+/* Dashboard navbar styles */
+.dashboard-link {
+  color: #374151 !important;
+}
+
+.dashboard-link:hover {
+  transform: scale(1.1);
+  color: #7c3aed !important;
 }
 
 .nav-link::after {

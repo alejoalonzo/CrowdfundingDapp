@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useContext } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { 
   HiHome, 
   HiCollection, 
@@ -20,8 +21,18 @@ import { WalletPopup } from '../popup';
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isWalletPopupOpen, setIsWalletPopupOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
   
   const { account, loading, disconnectWallet } = useContext(CrowdfundingContext);
+
+  // Determine if we're on dashboard page
+  const isDashboard = pathname === '/dashboard';
+
+  // Handle mounting to avoid hydration errors
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -58,15 +69,28 @@ const Navbar = () => {
     };
   }, [isMenuOpen]);
 
-  const navLinks = [
+  const baseNavLinks = [
     { name: 'Home', href: '#home', icon: HiHome },
     { name: 'Campaigns', href: '#campaigns', icon: HiCollection },
     { name: 'About', href: '#about', icon: HiInformationCircle },
     { name: 'Contact', href: '#contact', icon: HiMail }
   ];
 
+  // Add Dashboard link only when wallet is connected and component is mounted
+  const navLinks = mounted && account 
+    ? [
+        ...baseNavLinks.slice(0, 2), // Home y Campaigns
+        { name: 'Dashboard', href: '/dashboard', icon: HiPlus },
+        ...baseNavLinks.slice(2) // About y Contact
+      ]
+    : baseNavLinks;
+
   return (
-    <nav className="bg-transparent border-b border-white border-opacity-30 fixed top-0 left-0 right-0 z-50 backdrop-blur-sm">
+    <nav className={`${
+      isDashboard 
+        ? 'bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm' 
+        : 'bg-transparent border-b border-white border-opacity-30 backdrop-blur-sm'
+    } fixed top-0 left-0 right-0 z-50 transition-all duration-300`}>
       <div className="container mx-auto px-6">
         <div className="flex justify-between items-center h-16 md:h-20">
           
@@ -76,7 +100,9 @@ const Navbar = () => {
               <div className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center" style={{backgroundColor: '#19d8f7'}}>
                 <span className="text-white font-bold text-lg md:text-xl">C</span>
               </div>
-              <span className="font-bold text-xl md:text-2xl text-white">
+              <span className={`font-bold text-xl md:text-2xl ${
+                isDashboard ? 'text-gray-800' : 'text-white'
+              } transition-colors duration-300`}>
                 CrowdFund
               </span>
             </Link>
@@ -84,22 +110,46 @@ const Navbar = () => {
 
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="nav-link text-white px-3 py-2 rounded-md text-sm font-medium uppercase tracking-wide transition-all duration-300 relative hover:text-cyan-300 cursor-pointer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  const element = document.querySelector(link.href);
-                  if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }
-                }}
-              >
-                {link.name}
-              </a>
-            ))}
+            {navLinks.map((link) => 
+              link.href.startsWith('/') ? (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`nav-link ${isDashboard ? 'dashboard-link' : ''} px-3 py-2 rounded-md text-sm font-medium uppercase tracking-wide transition-all duration-300 relative cursor-pointer ${
+                    isDashboard 
+                      ? '!text-gray-800 hover:!text-purple-600 hover:bg-purple-50' 
+                      : 'text-white hover:text-cyan-300'
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              ) : (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  className={`nav-link ${isDashboard ? 'dashboard-link' : ''} px-3 py-2 rounded-md text-sm font-medium uppercase tracking-wide transition-all duration-300 relative cursor-pointer ${
+                    isDashboard 
+                      ? '!text-gray-800 hover:!text-purple-600 hover:bg-purple-50' 
+                      : 'text-white hover:text-cyan-300'
+                  }`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (isDashboard) {
+                      // Si estamos en dashboard, navegar a la página principal con el hash
+                      window.location.href = `/${link.href}`;
+                    } else {
+                      // Si estamos en la página principal, hacer scroll suave
+                      const element = document.querySelector(link.href);
+                      if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    }
+                  }}
+                >
+                  {link.name}
+                </a>
+              )
+            )}
           </div>
 
           {/* Desktop Connect Wallet Button */}
@@ -113,7 +163,7 @@ const Navbar = () => {
               }`}
               style={{
                 background: account 
-                  ? '#000000' 
+                  ? (isDashboard ? 'linear-gradient(135deg, #7c3aed, #3b82f6)' : '#000000')
                   : 'linear-gradient(135deg, #51256b, #19d8f7)',
                 color: 'white',
                 border: 'none'
@@ -150,8 +200,10 @@ const Navbar = () => {
                 onClick={handleDisconnectClick}
                 className="relative w-10 h-10 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 cursor-pointer flex items-center justify-center overflow-hidden group hover:shadow-lg p-0.5"
                 style={{
-                  background: 'linear-gradient(135deg, #51256b, #3d1c52, #2a1338)',
-                  color: '#51256b'
+                  background: isDashboard 
+                    ? 'linear-gradient(135deg, #7c3aed, #3b82f6)' 
+                    : 'linear-gradient(135deg, #51256b, #3d1c52, #2a1338)',
+                  color: isDashboard ? '#7c3aed' : '#51256b'
                 }}
                 title="Disconnect Wallet"
               >
@@ -176,7 +228,11 @@ const Navbar = () => {
           <div className="md:hidden">
             <button
               onClick={toggleMenu}
-              className="text-white hover:text-cyan-300 focus:outline-none transition-colors duration-200 p-2"
+              className={`focus:outline-none transition-colors duration-200 p-2 ${
+                isDashboard 
+                  ? 'text-gray-700 hover:text-purple-600' 
+                  : 'text-white hover:text-cyan-300'
+              }`}
             >
               {isMenuOpen ? (
                 <HiX className="h-6 w-6" />
@@ -227,16 +283,36 @@ const Navbar = () => {
             <div className="space-y-2 mb-8">
               {navLinks.map((link) => {
                 const IconComponent = link.icon;
-                return (
+                return link.href.startsWith('/') ? (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gradient-to-r hover:from-indigo-50 hover:to-cyan-50 transition-all duration-300 group cursor-pointer"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <div className="p-2 rounded-lg group-hover:scale-110 transition-transform duration-300" style={{backgroundColor: 'rgba(25, 216, 247, 0.1)', border: '1px solid rgba(25, 216, 247, 0.2)'}}>
+                      <IconComponent className="h-6 w-6" style={{color: '#19d8f7'}} />
+                    </div>
+                    <span className="text-lg font-medium uppercase tracking-wide group-hover:translate-x-1 transition-transform duration-300" style={{color: '#51256b'}}>
+                      {link.name}
+                    </span>
+                  </Link>
+                ) : (
                   <a
                     key={link.name}
                     href={link.href}
                     className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gradient-to-r hover:from-indigo-50 hover:to-cyan-50 transition-all duration-300 group cursor-pointer"
                     onClick={(e) => {
                       e.preventDefault();
-                      const element = document.querySelector(link.href);
-                      if (element) {
-                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      if (isDashboard) {
+                        // Si estamos en dashboard, navegar a la página principal con el hash
+                        window.location.href = `/${link.href}`;
+                      } else {
+                        // Si estamos en la página principal, hacer scroll suave
+                        const element = document.querySelector(link.href);
+                        if (element) {
+                          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
                       }
                       setIsMenuOpen(false);
                     }}
