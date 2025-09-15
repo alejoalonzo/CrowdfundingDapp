@@ -11,7 +11,8 @@ import {
   HiMenuAlt3,
   HiX,
   HiCreditCard,
-  HiCheckCircle
+  HiCheckCircle,
+  HiLogout
 } from 'react-icons/hi';
 import { CrowdfundingContext } from '../../context/CrowdfundingContext';
 import { WalletPopup } from '../popup';
@@ -20,7 +21,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isWalletPopupOpen, setIsWalletPopupOpen] = useState(false);
   
-  const { account, loading } = useContext(CrowdfundingContext);
+  const { account, loading, disconnectWallet } = useContext(CrowdfundingContext);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -32,6 +33,11 @@ const Navbar = () => {
 
   const closeWalletPopup = () => {
     setIsWalletPopupOpen(false);
+  };
+
+  const handleDisconnectClick = () => {
+    // Abrir popup para mostrar opciones de desconectar
+    setIsWalletPopupOpen(true);
   };
 
   // Format address for display
@@ -97,11 +103,14 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Connect Wallet Button */}
-          <div className="hidden md:flex items-center">
+          <div className="hidden md:flex items-center space-x-3">
+            {/* Botón principal - Solo clickable si no está conectado */}
             <button 
-              onClick={toggleWalletPopup}
+              onClick={account ? null : toggleWalletPopup} // Solo clickable si no hay account
               disabled={loading}
-              className="px-6 py-2 rounded-full font-semibold border-2 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center space-x-2"
+              className={`px-6 py-2 rounded-full font-semibold border-2 transition-all duration-300 transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 ${
+                account ? 'cursor-default' : 'cursor-pointer hover:scale-105'
+              }`}
               style={{
                 backgroundColor: account ? '#22c55e' : '#000000',
                 borderColor: account ? '#22c55e' : '#000000',
@@ -125,6 +134,18 @@ const Navbar = () => {
                 </>
               )}
             </button>
+            
+            {/* Disconnect Button - Solo visible cuando está conectado */}
+            {account && !loading && (
+              <button 
+                onClick={handleDisconnectClick}
+                className="px-4 py-2 rounded-full font-semibold border-2 border-red-400 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 transform hover:scale-105 cursor-pointer flex items-center space-x-2"
+                title="Disconnect Wallet"
+              >
+                <HiLogout className="h-4 w-4" />
+                <span className="hidden lg:inline">Disconnect</span>
+              </button>
+            )}
           </div>
 
           {/* Mobile Hamburger Button */}
@@ -208,7 +229,7 @@ const Navbar = () => {
             </div>
 
             {/* Connect Wallet Button */}
-            <div className="pt-4 border-t border-gray-100">
+            <div className="pt-4 border-t border-gray-100 space-y-3">
               <button 
                 onClick={() => {
                   setIsMenuOpen(false);
@@ -238,6 +259,21 @@ const Navbar = () => {
                   </>
                 )}
               </button>
+
+              {/* Disconnect Button Mobile - Solo visible cuando está conectado */}
+              {account && !loading && (
+                <button 
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    handleDisconnect();
+                  }}
+                  className="w-full flex items-center justify-center space-x-3 px-6 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg cursor-pointer border-2 border-red-400 text-red-500 hover:bg-red-500 hover:text-white"
+                  style={{backgroundColor: 'transparent'}}
+                >
+                  <HiLogout className="h-5 w-5" />
+                  <span>Disconnect Wallet</span>
+                </button>
+              )}
             </div>
 
             {/* Footer */}

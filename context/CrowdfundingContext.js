@@ -180,10 +180,19 @@ export const CrowdfundingProvider = ({ children }) => {
   // Función para inicializar contratos
   const initializeContracts = async accountAddress => {
     try {
-      if (!accountAddress || !window.ethereum || !ethers || !Constants) return;
+      if (!accountAddress || !window.ethereum || !ethers || !Constants) {
+        console.log("Missing requirements for contract initialization");
+        return;
+      }
+
+      console.log("Initializing contracts for account:", accountAddress);
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
+
+      // Verificar que el signer funciona
+      const signerAddress = await signer.getAddress();
+      console.log("Signer address:", signerAddress);
 
       // Crear instancia del CrowdfundingFactory
       const factoryContract = new ethers.Contract(
@@ -191,6 +200,15 @@ export const CrowdfundingProvider = ({ children }) => {
         Constants.CrowdfundingFactoryABI,
         signer
       );
+
+      // Verificar que el contrato funciona haciendo una llamada simple
+      try {
+        await factoryContract.owner();
+        console.log("Factory contract connection verified");
+      } catch (err) {
+        console.error("Factory contract verification failed:", err);
+        throw new Error("Failed to connect to factory contract");
+      }
 
       setContracts({
         factory: factoryContract,
@@ -203,12 +221,14 @@ export const CrowdfundingProvider = ({ children }) => {
         accountAddress
       );
 
-      // Load campaigns after contract initialization
-      await loadAllCampaigns(factoryContract);
-      await loadUserCampaigns(factoryContract, accountAddress);
+      // Load campaigns after contract initialization with a small delay
+      setTimeout(async () => {
+        await loadAllCampaigns(factoryContract);
+        await loadUserCampaigns(factoryContract, accountAddress);
+      }, 100);
     } catch (error) {
       console.error("Error initializing contracts:", error);
-      setError("Error connecting to contracts");
+      setError("Error connecting to contracts: " + error.message);
     }
   };
 
@@ -317,6 +337,15 @@ export const CrowdfundingProvider = ({ children }) => {
 
       if (!factory) {
         console.log("Factory contract not available");
+        setCampaignsLoading(false);
+        return;
+      }
+
+      // Verificar que tenemos un runner válido (provider o signer)
+      const runner = contracts.signer || contracts.provider;
+      if (!runner) {
+        console.log("No provider or signer available for campaign contracts");
+        setCampaignsLoading(false);
         return;
       }
 
@@ -327,11 +356,11 @@ export const CrowdfundingProvider = ({ children }) => {
       const processedCampaigns = await Promise.all(
         campaigns.map(async (campaign, index) => {
           try {
-            // Get campaign contract instance
+            // Get campaign contract instance with proper runner
             const campaignContract = new ethers.Contract(
               campaign.campaignAddress,
               Constants.CrowdfundingABI,
-              contracts.signer || contracts.provider
+              runner
             );
 
             // Get additional campaign details
@@ -396,6 +425,13 @@ export const CrowdfundingProvider = ({ children }) => {
         return;
       }
 
+      // Verificar que tenemos un runner válido (provider o signer)
+      const runner = contracts.signer || contracts.provider;
+      if (!runner) {
+        console.log("No provider or signer available for user campaigns");
+        return;
+      }
+
       const userCampaignsData = await factory.getUserCampaigns(user);
       console.log("User campaigns loaded:", userCampaignsData.length);
 
@@ -406,7 +442,7 @@ export const CrowdfundingProvider = ({ children }) => {
             const campaignContract = new ethers.Contract(
               campaign.campaignAddress,
               Constants.CrowdfundingABI,
-              contracts.signer || contracts.provider
+              runner
             );
 
             const [goal, deadline, balance, description, state] =

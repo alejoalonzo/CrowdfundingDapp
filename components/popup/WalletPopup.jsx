@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { 
   HiX, 
   HiCreditCard, 
@@ -50,15 +50,29 @@ const WalletPopup = ({ isOpen, onClose }) => {
     }
   }, [isOpen, error, setError]);
 
+  // Close popup automatically only when connecting (not when already connected)
+  const [justConnected, setJustConnected] = useState(false);
+  
+  useEffect(() => {
+    if (isOpen && account && justConnected) {
+      const timer = setTimeout(() => {
+        onClose();
+        setJustConnected(false);
+      }, 1500); // 1.5 segundos para ver el estado conectado
+      
+      return () => clearTimeout(timer);
+    }
+  }, [account, isOpen, onClose, justConnected]);
+
   // Handle connect wallet
   const handleConnect = async () => {
     try {
+      setJustConnected(true);
       await connectWallet();
-      if (account) {
-        onClose();
-      }
+      // No cerramos aquí, lo manejamos en el useEffect
     } catch (err) {
       console.error('Error connecting wallet:', err);
+      setJustConnected(false);
     }
   };
 
@@ -292,11 +306,25 @@ const WalletPopup = ({ isOpen, onClose }) => {
                   className="w-full flex items-center justify-center space-x-2 sm:space-x-3 px-4 sm:px-6 py-3 rounded-xl sm:rounded-2xl font-semibold transition-all duration-300 border-2 text-red-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
                   style={{
                     borderColor: 'rgba(239, 68, 68, 0.3)',
-                    backgroundColor: 'rgba(239, 68, 68, 0.05)'
+                    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.08) 100%)',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!loading) {
+                      e.target.style.background = 'linear-gradient(145deg, #f87171 0%, #ef4444 50%, #dc2626 100%)';
+                      e.target.style.borderColor = 'rgba(239, 68, 68, 0.6)';
+                      e.target.style.boxShadow = '0 8px 25px rgba(239, 68, 68, 0.3)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!loading) {
+                      e.target.style.background = 'linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.08) 100%)';
+                      e.target.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                      e.target.style.boxShadow = 'none';
+                    }
                   }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative flex items-center space-x-2 sm:space-x-3">
+                  <div className="relative flex items-center space-x-2 sm:space-x-3 z-10">
                     <HiLogout className="h-4 sm:h-5 w-4 sm:w-5" />
                     <span className="text-sm sm:text-base">Disconnect</span>
                   </div>
@@ -343,14 +371,23 @@ const WalletPopup = ({ isOpen, onClose }) => {
                   <button
                     onClick={handleConnect}
                     disabled={loading || !isBlockchainAvailable}
-                    className="w-full px-4 sm:px-6 py-3 rounded-xl sm:rounded-2xl font-semibold transition-all duration-300 text-white disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center space-x-2 sm:space-x-3 relative overflow-hidden group"
+                    className="w-full px-4 sm:px-6 py-3 rounded-xl sm:rounded-2xl font-semibold transition-all duration-300 text-white disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center space-x-2 sm:space-x-3 relative overflow-hidden group hover:shadow-lg"
                     style={{
                       background: 'linear-gradient(145deg, #19d8f7 0%, #0ea5e9 100%)',
                       boxShadow: '0 6px 20px rgba(25, 216, 247, 0.3)'
                     }}
+                    onMouseEnter={(e) => {
+                      if (!loading && isBlockchainAvailable) {
+                        e.target.style.background = 'linear-gradient(145deg, #0ea5e9 0%, #0284c7 100%)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!loading && isBlockchainAvailable) {
+                        e.target.style.background = 'linear-gradient(145deg, #19d8f7 0%, #0ea5e9 100%)';
+                      }
+                    }}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="relative flex items-center space-x-2 sm:space-x-3">
+                    <div className="relative flex items-center space-x-2 sm:space-x-3 z-10">
                       {loading ? (
                         <>
                           <div className="w-4 sm:w-5 h-4 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
