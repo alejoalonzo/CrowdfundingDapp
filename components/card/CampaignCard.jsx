@@ -69,18 +69,31 @@ const CampaignCard = ({
       if (fullData) {
         // Get selected tiers with their original indexes
         const selectedTierIndexes = getSelectedTiers(campaignAddress);
-        const selectedTiersWithIndex = selectedTierIndexes.map(index => ({
-          ...fullData.tiers[index],
-          originalIndex: index
-        }));
         
-        // Add selected tiers to campaign data
-        const campaignWithSelectedTiers = {
+        let tiersToShow;
+        if (selectedTierIndexes.length > 0) {
+          // Show only selected tiers if any are selected
+          tiersToShow = selectedTierIndexes.map(index => ({
+            ...fullData.tiers[index],
+            originalIndex: index
+          }));
+        } else {
+          // Show all tiers if none are selected (for new users/browsers)
+          tiersToShow = fullData.tiers.map((tier, index) => ({
+            ...tier,
+            originalIndex: index
+          }));
+        }
+        
+        // Add tiers to campaign data
+        const campaignWithTiers = {
           ...fullData,
-          tiers: selectedTiersWithIndex
+          tiers: tiersToShow,
+          allTiersCount: fullData.tiers.length,
+          hasSelectedTiers: selectedTierIndexes.length > 0
         };
         
-        setCampaignFullData(campaignWithSelectedTiers);
+        setCampaignFullData(campaignWithTiers);
         setIsFundPopupOpen(true);
       }
     } catch (error) {

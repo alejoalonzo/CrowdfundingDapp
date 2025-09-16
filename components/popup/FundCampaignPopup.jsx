@@ -8,7 +8,6 @@ const FundCampaignPopup = ({ isOpen, onClose, campaign }) => {
   const { account, loading, error, setError, fundCampaign } = useContext(CrowdfundingContext);
   
   const [selectedTier, setSelectedTier] = useState(null);
-  const [customAmount, setCustomAmount] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Close popup on Escape key
@@ -35,7 +34,6 @@ const FundCampaignPopup = ({ isOpen, onClose, campaign }) => {
   useEffect(() => {
     if (isOpen) {
       setSelectedTier(null);
-      setCustomAmount('');
       setError('');
     }
   }, [isOpen, setError]);
@@ -63,29 +61,16 @@ const FundCampaignPopup = ({ isOpen, onClose, campaign }) => {
     return Math.max(0, daysLeft);
   };
 
-  const handleCustomAmountChange = (e) => {
-    const value = e.target.value;
-    // Allow only numbers and one decimal point
-    if (/^\d*\.?\d*$/.test(value)) {
-      setCustomAmount(value);
-    }
-  };
-
   const handleTierSelect = (tier) => {
     setSelectedTier(tier);
-    setCustomAmount(tier.cost);
-  };
-
-  const handleCustomDonation = () => {
-    setSelectedTier(null);
-    setCustomAmount('');
+    // No need to set custom amount anymore since we use tier amount directly
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!customAmount || parseFloat(customAmount) <= 0) {
-      setError('Donation amount must be greater than 0');
+    if (!selectedTier) {
+      setError('Please select a funding tier');
       return;
     }
 
@@ -98,23 +83,15 @@ const FundCampaignPopup = ({ isOpen, onClose, campaign }) => {
     setError('');
 
     try {
-      let success = false;
-
-      if (selectedTier) {
-        // Fund using selected tier with original index
-        const tierIndex = selectedTier.originalIndex;
-        if (tierIndex === undefined) {
-          setError('Tier index not found');
-          return;
-        }
-        success = await fundCampaign(campaign.address, tierIndex, customAmount);
-      } else {
-        // For custom donations, we need to handle differently
-        // Since the smart contract requires a tier, we'll need to create a custom tier
-        // For now, show an error asking user to select a tier
-        setError('Please select a funding tier to continue');
+      // Fund using selected tier with original index
+      const tierIndex = selectedTier.originalIndex;
+      if (tierIndex === undefined) {
+        setError('Tier index not found');
         return;
       }
+      
+      const amount = selectedTier.cost || selectedTier.amount;
+      const success = await fundCampaign(campaign.address, tierIndex, amount);
       
       if (success) {
         console.log('Campaign funded successfully!');
@@ -131,8 +108,14 @@ const FundCampaignPopup = ({ isOpen, onClose, campaign }) => {
   // Handle backdrop click
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
+      console.log('Backdrop clicked, closing popup');
       onClose();
     }
+  };
+
+  // Prevent content clicks from closing popup
+  const handleContentClick = (e) => {
+    e.stopPropagation();
   };
 
   if (!isOpen || !campaign) return null;
@@ -145,9 +128,12 @@ const FundCampaignPopup = ({ isOpen, onClose, campaign }) => {
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={handleBackdropClick}
     >
-      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[#51256b] to-[#19d8f7] px-6 py-4">
+      <div 
+        className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all"
+        onClick={handleContentClick}
+      >
+        {/* Header - Fixed */}
+        <div className="bg-gradient-to-r from-[#51256b] to-[#19d8f7] px-6 py-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-white">
               Fund Campaign
@@ -161,8 +147,9 @@ const FundCampaignPopup = ({ isOpen, onClose, campaign }) => {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-6">
+        {/* Content - Scrollable */}
+        <div className="max-h-[calc(90vh-80px)] overflow-y-auto">
+          <div className="p-6">
           {/* Campaign Info */}
           <div className="mb-8">
             {/* Campaign Title & Status */}
@@ -273,9 +260,23 @@ const FundCampaignPopup = ({ isOpen, onClose, campaign }) => {
           {/* Tiers Section */}
           {selectedTiers.length > 0 ? (
             <div className="mb-8">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Available Funding Tiers
-              </h4>
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-lg font-semibold text-gray-900">
+                  {campaign.hasSelectedTiers ? 'Selected Funding Tiers' : 'All Available Funding Tiers'}
+                </h4>
+                {!campaign.hasSelectedTiers && (
+                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                    Showing all tiers
+                  </span>
+                )}
+              </div>
+              {!campaign.hasSelectedTiers && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-700">
+                    💡 The campaign owner hasn't selected specific tiers yet, so all available tiers are shown.
+                  </p>
+                </div>
+              )}
               <div className="space-y-3">
                 {selectedTiers.map((tier, index) => (
                   <div
@@ -315,47 +316,30 @@ const FundCampaignPopup = ({ isOpen, onClose, campaign }) => {
             </div>
           )}
 
-          {/* Custom Amount Section */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Donation Amount (ETH) *
-                </label>
-                <button
-                  type="button"
-                  onClick={handleCustomDonation}
-                  className="text-sm text-[#51256b] hover:text-[#4a2357] font-medium"
-                >
-                  Custom Amount
-                </button>
-              </div>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={customAmount}
-                  onChange={handleCustomAmountChange}
-                  required
-                  placeholder="0.01"
-                  className="w-full px-4 py-3 pl-12 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#51256b] focus:border-[#51256b] focus:bg-white transition-all duration-200 text-gray-900 placeholder-gray-500"
-                  disabled={isSubmitting}
-                />
-                <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                  <span className="text-gray-500 font-medium">Ξ</span>
+          {/* Submit Button */}
+          {selectedTier && (
+            <div className="bg-gradient-to-r from-[#51256b]/5 to-[#19d8f7]/5 p-4 rounded-xl border border-[#51256b]/20 mb-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Selected Tier:</p>
+                  <p className="font-semibold text-gray-900">{selectedTier.name}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-600 mb-1">Amount:</p>
+                  <p className="text-2xl font-bold text-[#51256b]">
+                    {parseFloat(selectedTier.cost || selectedTier.amount).toFixed(4)} ETH
+                  </p>
                 </div>
               </div>
-              {selectedTier && (
-                <p className="text-xs text-gray-600 mt-1">
-                  Selected tier: {selectedTier.name}
-                </p>
-              )}
             </div>
+          )}
 
+          <form onSubmit={handleSubmit}>
             {/* Submit Button */}
             <div className="pt-4">
               <button
                 type="submit"
-                disabled={isSubmitting || !customAmount || parseFloat(customAmount) <= 0}
+                disabled={isSubmitting || !selectedTier}
                 className="w-full bg-gradient-to-r from-[#51256b] to-[#19d8f7] hover:from-[#4a2357] hover:to-[#17c3e8] disabled:from-gray-300 disabled:to-gray-400 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
                 {isSubmitting ? (
@@ -363,15 +347,20 @@ const FundCampaignPopup = ({ isOpen, onClose, campaign }) => {
                     <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
                     <span>Processing...</span>
                   </>
-                ) : (
+                ) : selectedTier ? (
                   <>
                     <HiCurrencyDollar className="h-5 w-5" />
-                    <span>Fund Campaign</span>
+                    <span>Fund with {parseFloat(selectedTier.cost || selectedTier.amount).toFixed(4)} ETH</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Please select a tier</span>
                   </>
                 )}
               </button>
             </div>
           </form>
+          </div>
         </div>
       </div>
     </div>

@@ -25,7 +25,13 @@ export const CrowdfundingProvider = ({ children }) => {
   const [campaignsLoading, setCampaignsLoading] = useState(false);
 
   // Selected tiers state - stores which tiers are selected for each campaign
-  const [selectedTiers, setSelectedTiers] = useState({});
+  const [selectedTiers, setSelectedTiers] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("selectedTiers");
+      return saved ? JSON.parse(saved) : {};
+    }
+    return {};
+  });
 
   // Dynamic imports state
   const [ethers, setEthers] = useState(null);
@@ -774,29 +780,45 @@ export const CrowdfundingProvider = ({ children }) => {
   // ===== TIER SELECTION FUNCTIONS =====
 
   const selectTier = useCallback((campaignAddress, tierIndex) => {
+    console.log("selectTier called:", { campaignAddress, tierIndex });
     setSelectedTiers(prev => {
       const campaignTiers = prev[campaignAddress] || [];
       const isAlreadySelected = campaignTiers.includes(tierIndex);
 
+      let newState;
       if (isAlreadySelected) {
         // Remove from selection
-        return {
+        newState = {
           ...prev,
           [campaignAddress]: campaignTiers.filter(idx => idx !== tierIndex),
         };
       } else {
         // Add to selection
-        return {
+        newState = {
           ...prev,
           [campaignAddress]: [...campaignTiers, tierIndex],
         };
       }
+
+      // Save to localStorage
+      if (typeof window !== "undefined") {
+        localStorage.setItem("selectedTiers", JSON.stringify(newState));
+      }
+
+      console.log("New selectedTiers state:", newState);
+      return newState;
     });
   }, []);
 
   const getSelectedTiers = useCallback(
     campaignAddress => {
-      return selectedTiers[campaignAddress] || [];
+      const result = selectedTiers[campaignAddress] || [];
+      console.log("getSelectedTiers called:", {
+        campaignAddress,
+        result,
+        allSelectedTiers: selectedTiers,
+      });
+      return result;
     },
     [selectedTiers]
   );
@@ -804,10 +826,31 @@ export const CrowdfundingProvider = ({ children }) => {
   const isSelected = useCallback(
     (campaignAddress, tierIndex) => {
       const campaignSelectedTiers = selectedTiers[campaignAddress] || [];
-      return campaignSelectedTiers.includes(tierIndex);
+      const result = campaignSelectedTiers.includes(tierIndex);
+      console.log("isSelected called:", {
+        campaignAddress,
+        tierIndex,
+        result,
+        campaignSelectedTiers,
+      });
+      return result;
     },
     [selectedTiers]
   );
+
+  const clearSelectedTiers = useCallback(campaignAddress => {
+    setSelectedTiers(prev => {
+      const newState = { ...prev };
+      delete newState[campaignAddress];
+
+      // Save to localStorage
+      if (typeof window !== "undefined") {
+        localStorage.setItem("selectedTiers", JSON.stringify(newState));
+      }
+
+      return newState;
+    });
+  }, []);
 
   return (
     <CrowdfundingContext.Provider
@@ -846,6 +889,7 @@ export const CrowdfundingProvider = ({ children }) => {
         getSelectedTiers,
         isSelected,
         selectedTiers,
+        clearSelectedTiers,
 
         // Utils
         isBlockchainAvailable: isBlockchainAvailable(),
