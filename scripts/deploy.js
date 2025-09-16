@@ -29,53 +29,53 @@ async function main() {
   console.log("⏸️  Factory Paused:", isPaused);
 
   // Optional: Create a test campaign
-  console.log("\n🎯 Creating a test campaign...");
+  // console.log("\n🎯 Creating a test campaign...");
 
-  try {
-    const tx = await factory.createCampaign(
-      "My First Campaign",
-      "This is a test campaign to demonstrate the system functionality",
-      ethers.parseEther("10"), // Goal: 10 ETH
-      30 // 30 days duration
-    );
+  // try {
+  //   const tx = await factory.createCampaign(
+  //     "My First Campaign",
+  //     "This is a test campaign to demonstrate the system functionality",
+  //     ethers.parseEther("10"), // Goal: 10 ETH
+  //     30 // 30 days duration
+  //   );
 
-    await tx.wait();
-    console.log("✅ Test campaign created");
+  //   await tx.wait();
+  //   console.log("✅ Test campaign created");
 
-    // Get all campaigns
-    const campaigns = await factory.getAllCampaigns();
-    console.log("📊 Total campaigns:", campaigns.length);
+  //   // Get all campaigns
+  //   const campaigns = await factory.getAllCampaigns();
+  //   console.log("📊 Total campaigns:", campaigns.length);
 
-    if (campaigns.length > 0) {
-      const firstCampaign = campaigns[0];
-      console.log("🏷️  First campaign:");
-      console.log("   - Address:", firstCampaign.campaignAddress);
-      console.log("   - Owner:", firstCampaign.owner);
-      console.log("   - Name:", firstCampaign.name);
+  //   if (campaigns.length > 0) {
+  //     const firstCampaign = campaigns[0];
+  //     console.log("🏷️  First campaign:");
+  //     console.log("   - Address:", firstCampaign.campaignAddress);
+  //     console.log("   - Owner:", firstCampaign.owner);
+  //     console.log("   - Name:", firstCampaign.name);
 
-      // Get more campaign details
-      const Campaign = await ethers.getContractFactory("Crowdfunding");
-      const campaignContract = Campaign.attach(firstCampaign.campaignAddress);
+  //     // Get more campaign details
+  //     const Campaign = await ethers.getContractFactory("Crowdfunding");
+  //     const campaignContract = Campaign.attach(firstCampaign.campaignAddress);
 
-      const goal = await campaignContract.goal();
-      const deadline = await campaignContract.deadline();
-      const balance = await campaignContract.getContractBalance();
-      const state = await campaignContract.getCampaignStatus();
+  //     const goal = await campaignContract.goal();
+  //     const deadline = await campaignContract.deadline();
+  //     const balance = await campaignContract.getContractBalance();
+  //     const state = await campaignContract.getCampaignStatus();
 
-      console.log("   - Goal:", ethers.formatEther(goal), "ETH");
-      console.log("   - Balance:", ethers.formatEther(balance), "ETH");
-      console.log(
-        "   - Deadline:",
-        new Date(Number(deadline) * 1000).toLocaleString()
-      );
-      console.log(
-        "   - State:",
-        state === 0n ? "Active" : state === 1n ? "Successful" : "Failed"
-      );
-    }
-  } catch (error) {
-    console.error("❌ Error creating test campaign:", error.message);
-  }
+  //     console.log("   - Goal:", ethers.formatEther(goal), "ETH");
+  //     console.log("   - Balance:", ethers.formatEther(balance), "ETH");
+  //     console.log(
+  //       "   - Deadline:",
+  //       new Date(Number(deadline) * 1000).toLocaleString()
+  //     );
+  //     console.log(
+  //       "   - State:",
+  //       state === 0n ? "Active" : state === 1n ? "Successful" : "Failed"
+  //     );
+  //   }
+  // } catch (error) {
+  //   console.error("❌ Error creating test campaign:", error.message);
+  // }
 
   // Deployment summary
   console.log("\n📋 DEPLOYMENT SUMMARY:");

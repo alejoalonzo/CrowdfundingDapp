@@ -1,20 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-
-// Dynamic imports para evitar errores en build
-let ethers;
-let Constants;
-
-// Verificar si estamos en el cliente antes de importar ethers
-if (typeof window !== "undefined") {
-  try {
-    ethers = require("ethers");
-    Constants = require("@/context/Constants");
-  } catch (error) {
-    console.warn("Blockchain dependencies not available:", error);
-  }
-}
+import React, { useState, useEffect, useCallback } from "react";
 
 export const CrowdfundingContext = React.createContext();
 
@@ -38,9 +24,40 @@ export const CrowdfundingProvider = ({ children }) => {
   const [userCampaigns, setUserCampaigns] = useState([]);
   const [campaignsLoading, setCampaignsLoading] = useState(false);
 
+  // Dynamic imports state
+  const [ethers, setEthers] = useState(null);
+  const [Constants, setConstants] = useState(null);
+  const [importsLoaded, setImportsLoaded] = useState(false);
+
+  // Load blockchain dependencies dynamically
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const loadBlockchainDeps = async () => {
+        try {
+          const [ethersModule, constantsModule] = await Promise.all([
+            import("ethers"),
+            import("@/context/Constants"),
+          ]);
+
+          setEthers(ethersModule);
+          setConstants(constantsModule);
+          setImportsLoaded(true);
+          console.log("Blockchain dependencies loaded successfully");
+        } catch (error) {
+          console.warn("Failed to load blockchain dependencies:", error);
+          setImportsLoaded(false);
+        }
+      };
+
+      loadBlockchainDeps();
+    }
+  }, []);
+
   // Check if blockchain dependencies are available
   const isBlockchainAvailable = () => {
-    return typeof window !== "undefined" && ethers && Constants;
+    return (
+      typeof window !== "undefined" && ethers && Constants && importsLoaded
+    );
   };
 
   // ===== BASIC WALLET FUNCTIONS =====
@@ -119,20 +136,23 @@ export const CrowdfundingProvider = ({ children }) => {
     }
   };
 
-  // Check if we're on the client side
+  // Check if we're on the client side and load dependencies
   useEffect(() => {
     setIsClient(true);
+  }, []);
 
-    // Only check wallet if blockchain dependencies are available
-    if (isBlockchainAvailable()) {
+  // Initialize wallet after dependencies are loaded
+  useEffect(() => {
+    if (isClient && importsLoaded && isBlockchainAvailable()) {
       checkWallet();
       setupMetaMaskListeners();
-    } else {
+    } else if (isClient && !importsLoaded) {
       console.log(
         "Blockchain dependencies not available - running in demo mode"
       );
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isClient, importsLoaded]);
 
   const setupMetaMaskListeners = () => {
     // Setup MetaMask account change listener
@@ -330,165 +350,175 @@ export const CrowdfundingProvider = ({ children }) => {
   // ===== CROWDFUNDING SPECIFIC FUNCTIONS =====
 
   // Load all campaigns from the factory
-  const loadAllCampaigns = async (factoryContract = null) => {
-    try {
-      setCampaignsLoading(true);
-      const factory = factoryContract || contracts.factory;
+  const loadAllCampaigns = useCallback(
+    async (factoryContract = null) => {
+      try {
+        setCampaignsLoading(true);
+        const factory = factoryContract || contracts.factory;
 
-      if (!factory) {
-        console.log("Factory contract not available");
+        if (!factory) {
+          console.log("Factory contract not available");
+          setCampaignsLoading(false);
+          return;
+        }
+
+        // Verificar que tenemos un runner válido (provider o signer)
+        const runner = contracts.signer || contracts.provider;
+        if (!runner) {
+          console.log("No provider or signer available for campaign contracts");
+          setCampaignsLoading(false);
+          return;
+        }
+
+        const campaigns = await factory.getAllCampaigns();
+        console.log("All campaigns loaded:", campaigns.length);
+
+        // Process campaigns to include additional data
+        const processedCampaigns = await Promise.all(
+          campaigns.map(async (campaign, index) => {
+            try {
+              // Get campaign contract instance with proper runner
+              const campaignContract = new ethers.Contract(
+                campaign.campaignAddress,
+                Constants.CrowdfundingABI,
+                runner
+              );
+
+              // Get additional campaign details
+              const [goal, deadline, balance, description, state] =
+                await Promise.all([
+                  campaignContract.goal(),
+                  campaignContract.deadline(),
+                  campaignContract.getContractBalance(),
+                  campaignContract.description(),
+                  campaignContract.getCampaignStatus(),
+                ]);
+
+              return {
+                id: index,
+                address: campaign.campaignAddress,
+                owner: campaign.owner,
+                name: campaign.name,
+                description: description,
+                goal: ethers.formatEther(goal),
+                deadline: Number(deadline),
+                balance: ethers.formatEther(balance),
+                creationTime: Number(campaign.creationTime),
+                state: Number(state), // 0: Active, 1: Successful, 2: Failed
+                progress:
+                  (Number(ethers.formatEther(balance)) /
+                    Number(ethers.formatEther(goal))) *
+                  100,
+              };
+            } catch (error) {
+              console.error(`Error processing campaign ${index}:`, error);
+              return {
+                id: index,
+                address: campaign.campaignAddress,
+                owner: campaign.owner,
+                name: campaign.name,
+                error: true,
+              };
+            }
+          })
+        );
+
+        setAllCampaigns(processedCampaigns);
         setCampaignsLoading(false);
-        return;
-      }
-
-      // Verificar que tenemos un runner válido (provider o signer)
-      const runner = contracts.signer || contracts.provider;
-      if (!runner) {
-        console.log("No provider or signer available for campaign contracts");
+      } catch (error) {
+        console.error("Error loading campaigns:", error);
         setCampaignsLoading(false);
-        return;
+        setError("Error loading campaigns");
       }
-
-      const campaigns = await factory.getAllCampaigns();
-      console.log("All campaigns loaded:", campaigns.length);
-
-      // Process campaigns to include additional data
-      const processedCampaigns = await Promise.all(
-        campaigns.map(async (campaign, index) => {
-          try {
-            // Get campaign contract instance with proper runner
-            const campaignContract = new ethers.Contract(
-              campaign.campaignAddress,
-              Constants.CrowdfundingABI,
-              runner
-            );
-
-            // Get additional campaign details
-            const [goal, deadline, balance, description, state] =
-              await Promise.all([
-                campaignContract.goal(),
-                campaignContract.deadline(),
-                campaignContract.getContractBalance(),
-                campaignContract.description(),
-                campaignContract.getCampaignStatus(),
-              ]);
-
-            return {
-              id: index,
-              address: campaign.campaignAddress,
-              owner: campaign.owner,
-              name: campaign.name,
-              description: description,
-              goal: ethers.formatEther(goal),
-              deadline: Number(deadline),
-              balance: ethers.formatEther(balance),
-              creationTime: Number(campaign.creationTime),
-              state: Number(state), // 0: Active, 1: Successful, 2: Failed
-              progress:
-                (Number(ethers.formatEther(balance)) /
-                  Number(ethers.formatEther(goal))) *
-                100,
-            };
-          } catch (error) {
-            console.error(`Error processing campaign ${index}:`, error);
-            return {
-              id: index,
-              address: campaign.campaignAddress,
-              owner: campaign.owner,
-              name: campaign.name,
-              error: true,
-            };
-          }
-        })
-      );
-
-      setAllCampaigns(processedCampaigns);
-      setCampaignsLoading(false);
-    } catch (error) {
-      console.error("Error loading campaigns:", error);
-      setCampaignsLoading(false);
-      setError("Error loading campaigns");
-    }
-  };
+    },
+    [contracts.factory, contracts.signer, contracts.provider, ethers, Constants]
+  );
 
   // Load user's campaigns
-  const loadUserCampaigns = async (
-    factoryContract = null,
-    userAccount = null
-  ) => {
-    try {
-      const factory = factoryContract || contracts.factory;
-      const user = userAccount || account;
+  const loadUserCampaigns = useCallback(
+    async (factoryContract = null, userAccount = null) => {
+      try {
+        const factory = factoryContract || contracts.factory;
+        const user = userAccount || account;
 
-      if (!factory || !user) {
-        console.log("Factory contract or user account not available");
-        return;
+        if (!factory || !user) {
+          console.log("Factory contract or user account not available");
+          return;
+        }
+
+        // Verificar que tenemos un runner válido (provider o signer)
+        const runner = contracts.signer || contracts.provider;
+        if (!runner) {
+          console.log("No provider or signer available for user campaigns");
+          return;
+        }
+
+        const userCampaignsData = await factory.getUserCampaigns(user);
+        console.log("User campaigns loaded:", userCampaignsData.length);
+
+        // Process user campaigns similar to all campaigns
+        const processedUserCampaigns = await Promise.all(
+          userCampaignsData.map(async (campaign, index) => {
+            try {
+              const campaignContract = new ethers.Contract(
+                campaign.campaignAddress,
+                Constants.CrowdfundingABI,
+                runner
+              );
+
+              const [goal, deadline, balance, description, state] =
+                await Promise.all([
+                  campaignContract.goal(),
+                  campaignContract.deadline(),
+                  campaignContract.getContractBalance(),
+                  campaignContract.description(),
+                  campaignContract.getCampaignStatus(),
+                ]);
+
+              return {
+                id: index,
+                address: campaign.campaignAddress,
+                owner: campaign.owner,
+                name: campaign.name,
+                description: description,
+                goal: ethers.formatEther(goal),
+                deadline: Number(deadline),
+                balance: ethers.formatEther(balance),
+                creationTime: Number(campaign.creationTime),
+                state: Number(state),
+                progress:
+                  (Number(ethers.formatEther(balance)) /
+                    Number(ethers.formatEther(goal))) *
+                  100,
+              };
+            } catch (error) {
+              console.error(`Error processing user campaign ${index}:`, error);
+              return {
+                id: index,
+                address: campaign.campaignAddress,
+                owner: campaign.owner,
+                name: campaign.name,
+                error: true,
+              };
+            }
+          })
+        );
+
+        setUserCampaigns(processedUserCampaigns);
+      } catch (error) {
+        console.error("Error loading user campaigns:", error);
+        setError("Error loading user campaigns");
       }
-
-      // Verificar que tenemos un runner válido (provider o signer)
-      const runner = contracts.signer || contracts.provider;
-      if (!runner) {
-        console.log("No provider or signer available for user campaigns");
-        return;
-      }
-
-      const userCampaignsData = await factory.getUserCampaigns(user);
-      console.log("User campaigns loaded:", userCampaignsData.length);
-
-      // Process user campaigns similar to all campaigns
-      const processedUserCampaigns = await Promise.all(
-        userCampaignsData.map(async (campaign, index) => {
-          try {
-            const campaignContract = new ethers.Contract(
-              campaign.campaignAddress,
-              Constants.CrowdfundingABI,
-              runner
-            );
-
-            const [goal, deadline, balance, description, state] =
-              await Promise.all([
-                campaignContract.goal(),
-                campaignContract.deadline(),
-                campaignContract.getContractBalance(),
-                campaignContract.description(),
-                campaignContract.getCampaignStatus(),
-              ]);
-
-            return {
-              id: index,
-              address: campaign.campaignAddress,
-              owner: campaign.owner,
-              name: campaign.name,
-              description: description,
-              goal: ethers.formatEther(goal),
-              deadline: Number(deadline),
-              balance: ethers.formatEther(balance),
-              creationTime: Number(campaign.creationTime),
-              state: Number(state),
-              progress:
-                (Number(ethers.formatEther(balance)) /
-                  Number(ethers.formatEther(goal))) *
-                100,
-            };
-          } catch (error) {
-            console.error(`Error processing user campaign ${index}:`, error);
-            return {
-              id: index,
-              address: campaign.campaignAddress,
-              owner: campaign.owner,
-              name: campaign.name,
-              error: true,
-            };
-          }
-        })
-      );
-
-      setUserCampaigns(processedUserCampaigns);
-    } catch (error) {
-      console.error("Error loading user campaigns:", error);
-      setError("Error loading user campaigns");
-    }
-  };
+    },
+    [
+      contracts.factory,
+      contracts.signer,
+      contracts.provider,
+      account,
+      ethers,
+      Constants,
+    ]
+  );
 
   // Create a new campaign
   const createCampaign = async ({
@@ -674,6 +704,7 @@ export const CrowdfundingProvider = ({ children }) => {
         // Utils
         isBlockchainAvailable: isBlockchainAvailable(),
         LOCALHOST_CONFIG: Constants?.LOCALHOST_CONFIG || {},
+        importsLoaded,
       }}
     >
       {children}

@@ -1,9 +1,26 @@
-import React from 'react';
+"use client";
+
+import React, { useContext, useEffect, useState } from 'react';
 import { CampaignCard } from '../card';
+import { CrowdfundingContext } from '../../context/CrowdfundingContext';
 
 const CampaignGrid = () => {
-  // Datos de ejemplo para las campañas - en el futuro vendrán del contexto
-  const campaignsData = [
+  const { allCampaigns, loadAllCampaigns, campaignsLoading, isBlockchainAvailable } = useContext(CrowdfundingContext);
+  const [mounted, setMounted] = useState(false);
+
+  // Handle mounting to avoid hydration errors
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Load campaigns when component mounts and blockchain is available
+  useEffect(() => {
+    if (mounted && isBlockchainAvailable && loadAllCampaigns) {
+      loadAllCampaigns();
+    }
+  }, [mounted, isBlockchainAvailable, loadAllCampaigns]);
+  // Datos de ejemplo para las campañas por defecto
+  const defaultCampaigns = [
     {
       id: 1,
       title: "DeFi Revolution Platform",
@@ -13,7 +30,7 @@ const CampaignGrid = () => {
       daysLeft: "12",
       category: "DeFi",
       backers: "234",
-      image: "/images/example.png",
+      image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", // DeFi/Blockchain concept
       owner: "0x123...4567"
     },
     {
@@ -25,7 +42,7 @@ const CampaignGrid = () => {
       daysLeft: "24",
       category: "Environment",
       backers: "156",
-      image: "/images/example.png",
+      image: "https://images.unsplash.com/photo-1466611653911-95081537e5b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", // Wind turbines/renewable energy
       owner: "0x789...abcd"
     },
     {
@@ -37,7 +54,7 @@ const CampaignGrid = () => {
       daysLeft: "8",
       category: "Art & NFTs",
       backers: "445",
-      image: "/images/example.png",
+      image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", // Digital art/NFT
       owner: "0xdef...1234"
     },
     {
@@ -49,7 +66,7 @@ const CampaignGrid = () => {
       daysLeft: "18",
       category: "Education",
       backers: "198",
-      image: "/images/example.png",
+      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", // Education/learning
       owner: "0x456...89ef"
     },
     {
@@ -61,7 +78,7 @@ const CampaignGrid = () => {
       daysLeft: "30",
       category: "Gaming",
       backers: "567",
-      image: "/images/example.png",
+      image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", // Gaming/VR
       owner: "0xabc...7890"
     },
     {
@@ -73,10 +90,39 @@ const CampaignGrid = () => {
       daysLeft: "5",
       category: "Tools",
       backers: "123",
-      image: "/images/example.png",
+      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", // Analytics/charts
       owner: "0x654...cdef"
     }
   ];
+
+  // Transform blockchain campaigns to match the expected format
+  const transformBlockchainCampaign = (campaign, index) => ({
+    id: `blockchain-${campaign.address}`,
+    title: campaign.name,
+    description: campaign.description,
+    currentAmount: campaign.balance,
+    targetAmount: campaign.goal,
+    daysLeft: Math.max(0, Math.ceil((campaign.deadline - Date.now() / 1000) / (24 * 60 * 60))).toString(),
+    category: "Community",
+    backers: "--",
+    image: "https://images.unsplash.com/photo-1620321023374-d1a68fbc720d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", // Blockchain/community default image
+    owner: `${campaign.owner.slice(0, 6)}...${campaign.owner.slice(-4)}`
+  });
+
+  // Combine default campaigns with blockchain campaigns
+  const getCombinedCampaigns = () => {
+    if (!mounted) return [];
+    
+    const blockchainCampaigns = allCampaigns?.map(transformBlockchainCampaign) || [];
+    
+    // Combine and limit to show most recent campaigns first
+    const combined = [...blockchainCampaigns, ...defaultCampaigns];
+    
+    // Show all campaigns but prioritize user-created ones
+    return combined.slice(0, 12); // Limit to 12 campaigns for better performance
+  };
+
+  const displayCampaigns = getCombinedCampaigns();
 
   return (
     <section className="campaigns-section">
@@ -116,20 +162,48 @@ const CampaignGrid = () => {
 
         {/* Campaigns Grid */}
         <div className="campaigns-grid">
-          {campaignsData.map((campaign) => (
-            <CampaignCard
-              key={campaign.id}
-              title={campaign.title}
-              description={campaign.description}
-              currentAmount={campaign.currentAmount}
-              targetAmount={campaign.targetAmount}
-              daysLeft={campaign.daysLeft}
-              category={campaign.category}
-              backers={campaign.backers}
-              image={campaign.image}
-              owner={campaign.owner}
-            />
-          ))}
+          {campaignsLoading ? (
+            // Loading skeleton
+            <div className="campaigns-grid">
+              {[...Array(6)].map((_, index) => (
+                <div key={index} className="campaign-card-skeleton">
+                  <div className="skeleton-image"></div>
+                  <div className="skeleton-content">
+                    <div className="skeleton-line skeleton-title"></div>
+                    <div className="skeleton-line skeleton-description"></div>
+                    <div className="skeleton-line skeleton-description short"></div>
+                    <div className="skeleton-stats">
+                      <div className="skeleton-line skeleton-stat"></div>
+                      <div className="skeleton-line skeleton-stat"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : displayCampaigns.length > 0 ? (
+            displayCampaigns.map((campaign) => (
+              <CampaignCard
+                key={campaign.id}
+                title={campaign.title}
+                description={campaign.description}
+                currentAmount={campaign.currentAmount}
+                targetAmount={campaign.targetAmount}
+                daysLeft={campaign.daysLeft}
+                category={campaign.category}
+                backers={campaign.backers}
+                image={campaign.image}
+                owner={campaign.owner}
+              />
+            ))
+          ) : (
+            // Empty state when no campaigns
+            <div className="empty-campaigns-state">
+              <div className="empty-state-content">
+                <h3>No Campaigns Available</h3>
+                <p>Be the first to create a campaign and start your crowdfunding journey!</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* View More Button */}

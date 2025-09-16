@@ -159,74 +159,80 @@ const Navbar = () => {
 
           {/* Desktop Connect Wallet Button */}
           <div className="hidden md:flex items-center space-x-3">
-            {/* Botón principal - Solo clickable si no está conectado */}
-            <button 
-              onClick={account ? null : toggleWalletPopup} // Solo clickable si no hay account
-              disabled={loading}
-              className={`relative px-6 py-3 rounded-full font-semibold transition-all duration-300 transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 overflow-hidden group ${
-                account ? 'cursor-default' : 'cursor-pointer hover:scale-105 hover:shadow-lg'
-              }`}
-              style={{
-                background: account 
-                  ? (isDashboard ? '#000000' : '#000000')
-                  : 'linear-gradient(135deg, #51256b, #19d8f7)',
-                color: 'white',
-                border: 'none'
-              }}
-            >
-              <span className="relative z-10 flex items-center space-x-2">
-                {loading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Loading...</span>
-                  </>
-                ) : account ? (
-                  <>
-                    <div className="w-2 h-2 bg-green-400 rounded-full shadow-lg shadow-green-400/50"></div>
-                    <span>{formatAddress(account)}</span>
-                  </>
-                ) : (
-                  <>
-                    <HiCreditCard className="h-4 w-4" />
-                    <span>Connect Wallet</span>
-                  </>
-                )}
-              </span>
-              
-              {/* Glow effect */}
-              {!account && (
-                <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-all duration-600 group-hover:left-[100%]"></div>
-              )}
-            </button>
-            
-            {/* Disconnect Button - Solo visible cuando está conectado */}
-            {account && !loading && (
+            <ClientOnly fallback={
+              <div className="px-6 py-3 rounded-full bg-gray-200 animate-pulse">
+                <div className="w-24 h-4 bg-gray-300 rounded"></div>
+              </div>
+            }>
+              {/* Botón principal - Solo clickable si no está conectado */}
               <button 
-                onClick={handleDisconnectClick}
-                className="relative w-10 h-10 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 cursor-pointer flex items-center justify-center overflow-hidden group hover:shadow-lg p-0.5"
+                onClick={account ? null : toggleWalletPopup} // Solo clickable si no hay account
+                disabled={loading}
+                className={`relative px-6 py-3 rounded-full font-semibold transition-all duration-300 transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 overflow-hidden group ${
+                  account ? 'cursor-default' : 'cursor-pointer hover:scale-105 hover:shadow-lg'
+                }`}
                 style={{
-                  background: isDashboard 
-                    ? 'linear-gradient(135deg, #7c3aed, #3b82f6)' 
-                    : 'linear-gradient(135deg, #51256b, #3d1c52, #2a1338)',
-                  color: isDashboard ? '#7c3aed' : '#51256b'
+                  background: account 
+                    ? (isDashboard ? '#000000' : '#000000')
+                    : 'linear-gradient(135deg, #51256b, #19d8f7)',
+                  color: 'white',
+                  border: 'none'
                 }}
-                title="Disconnect Wallet"
               >
-                <div 
-                  className="w-full h-full rounded-full flex items-center justify-center"
-                  style={{
-                    background: '#ffffff'
-                  }}
-                >
-                  <span className="relative z-10">
-                    <HiLogout className="h-4 w-4" />
-                  </span>
-                </div>
+                <span className="relative z-10 flex items-center space-x-2">
+                  {loading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Loading...</span>
+                    </>
+                  ) : account ? (
+                    <>
+                      <div className="w-2 h-2 bg-green-400 rounded-full shadow-lg shadow-green-400/50"></div>
+                      <span>{formatAddress(account)}</span>
+                    </>
+                  ) : (
+                    <>
+                      <HiCreditCard className="h-4 w-4" />
+                      <span>Connect Wallet</span>
+                    </>
+                  )}
+                </span>
                 
                 {/* Glow effect */}
-                <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-all duration-600 group-hover:left-[100%] rounded-full"></div>
+                {!account && (
+                  <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-all duration-600 group-hover:left-[100%]"></div>
+                )}
               </button>
-            )}
+              
+              {/* Disconnect Button - Solo visible cuando está conectado */}
+              {account && !loading && (
+                <button 
+                  onClick={handleDisconnectClick}
+                  className="relative w-10 h-10 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 cursor-pointer flex items-center justify-center overflow-hidden group hover:shadow-lg p-0.5"
+                  style={{
+                    background: isDashboard 
+                      ? 'linear-gradient(135deg, #7c3aed, #3b82f6)' 
+                      : 'linear-gradient(135deg, #51256b, #3d1c52, #2a1338)',
+                    color: isDashboard ? '#7c3aed' : '#51256b'
+                  }}
+                  title="Disconnect Wallet"
+                >
+                  <div 
+                    className="w-full h-full rounded-full flex items-center justify-center"
+                    style={{
+                      background: '#ffffff'
+                    }}
+                  >
+                    <span className="relative z-10">
+                      <HiLogout className="h-4 w-4" />
+                    </span>
+                  </div>
+                  
+                  {/* Glow effect */}
+                  <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-all duration-600 group-hover:left-[100%] rounded-full"></div>
+                </button>
+              )}
+            </ClientOnly>
           </div>
 
           {/* Mobile Hamburger Button */}
@@ -340,69 +346,75 @@ const Navbar = () => {
 
             {/* Connect Wallet Button */}
             <div className="pt-4 border-t border-gray-100 space-y-3">
-              <button 
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  if (!account) toggleWalletPopup();
-                  else handleDisconnectClick();
-                }}
-                disabled={loading}
-                className="relative w-full flex items-center justify-center space-x-3 px-6 py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer overflow-hidden group"
-                style={{
-                  background: account 
-                    ? '#000000' 
-                    : 'linear-gradient(135deg, #51256b, #19d8f7)',
-                  color: 'white',
-                  border: 'none'
-                }}
-              >
-                <span className="relative z-10 flex items-center space-x-3">
-                  {loading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Loading...</span>
-                    </>
-                  ) : account ? (
-                    <>
-                      <div className="w-2 h-2 bg-green-400 rounded-full shadow-lg shadow-green-400/50"></div>
-                      <span>{formatAddress(account)}</span>
-                    </>
-                  ) : (
-                    <>
-                      <HiCreditCard className="h-5 w-5" />
-                      <span>Connect Wallet</span>
-                    </>
-                  )}
-                </span>
-                
-                {/* Glow effect */}
-                <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-all duration-600 group-hover:left-[100%]"></div>
-              </button>
-
-              {/* Disconnect Button Mobile - Solo visible cuando está conectado */}
-              {account && !loading && (
+              <ClientOnly fallback={
+                <div className="w-full px-6 py-4 rounded-full bg-gray-200 animate-pulse">
+                  <div className="w-32 h-4 bg-gray-300 rounded mx-auto"></div>
+                </div>
+              }>
                 <button 
                   onClick={() => {
                     setIsMenuOpen(false);
-                    handleDisconnectClick();
+                    if (!account) toggleWalletPopup();
+                    else handleDisconnectClick();
                   }}
-                  className="relative w-full flex items-center justify-center space-x-3 px-6 py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg cursor-pointer overflow-hidden group"
+                  disabled={loading}
+                  className="relative w-full flex items-center justify-center space-x-3 px-6 py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer overflow-hidden group"
                   style={{
-                    background: 'linear-gradient(135deg, #51256b, #19d8f7)',
+                    background: account 
+                      ? '#000000' 
+                      : 'linear-gradient(135deg, #51256b, #19d8f7)',
                     color: 'white',
                     border: 'none'
                   }}
-                  title="Disconnect Wallet"
                 >
                   <span className="relative z-10 flex items-center space-x-3">
-                    <HiLogout className="h-5 w-5" />
-                    <span>Disconnect Wallet</span>
+                    {loading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Loading...</span>
+                      </>
+                    ) : account ? (
+                      <>
+                        <div className="w-2 h-2 bg-green-400 rounded-full shadow-lg shadow-green-400/50"></div>
+                        <span>{formatAddress(account)}</span>
+                      </>
+                    ) : (
+                      <>
+                        <HiCreditCard className="h-5 w-5" />
+                        <span>Connect Wallet</span>
+                      </>
+                    )}
                   </span>
                   
                   {/* Glow effect */}
-                  <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-all duration-600 group-hover:left-[100%] rounded-full"></div>
+                  <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-all duration-600 group-hover:left-[100%]"></div>
                 </button>
-              )}
+
+                {/* Disconnect Button Mobile - Solo visible cuando está conectado */}
+                {account && !loading && (
+                  <button 
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      handleDisconnectClick();
+                    }}
+                    className="relative w-full flex items-center justify-center space-x-3 px-6 py-4 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg cursor-pointer overflow-hidden group"
+                    style={{
+                      background: 'linear-gradient(135deg, #51256b, #19d8f7)',
+                      color: 'white',
+                      border: 'none'
+                    }}
+                    title="Disconnect Wallet"
+                  >
+                    <span className="relative z-10 flex items-center space-x-3">
+                      <HiLogout className="h-5 w-5" />
+                      <span>Disconnect Wallet</span>
+                    </span>
+                    
+                    {/* Glow effect */}
+                    <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-all duration-600 group-hover:left-[100%] rounded-full"></div>
+                  </button>
+                )}
+              </ClientOnly>
             </div>
 
             {/* Footer */}

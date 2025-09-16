@@ -17,7 +17,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${montserrat.variable} antialiased`}>
+      <body
+        className={`${montserrat.variable} antialiased`}
+        suppressHydrationWarning={true}
+      >
         <CrowdfundingProvider>
           <div className="min-h-screen flex flex-col">
             <Navbar />

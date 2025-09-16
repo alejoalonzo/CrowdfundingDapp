@@ -12,7 +12,15 @@ const CampaignCard = ({
   image = "/images/example.png",
   owner = "0x123...abc"
 }) => {
-  const progressPercentage = (parseFloat(currentAmount) / parseFloat(targetAmount)) * 100;
+  // Safely parse numerical values
+  const safeCurrentAmount = parseFloat(currentAmount || 0);
+  const safeTargetAmount = parseFloat(targetAmount || 1);
+  const progressPercentage = (safeCurrentAmount / safeTargetAmount) * 100;
+
+  // Format display values
+  const displayCurrentAmount = safeCurrentAmount.toFixed(2);
+  const displayTargetAmount = safeTargetAmount.toFixed(2);
+  const displayDaysLeft = daysLeft || "0";
 
   return (
     <div className="campaign-card-modern group">
@@ -29,7 +37,7 @@ const CampaignCard = ({
             <span>{category}</span>
           </div>
           <div className="days-left-badge">
-            <div className="days-number">{daysLeft}</div>
+            <div className="days-number">{displayDaysLeft}</div>
             <div className="days-text">days left</div>
           </div>
         </div>
@@ -63,11 +71,11 @@ const CampaignCard = ({
           
           <div className="stats-grid">
             <div className="stat-item">
-              <span className="stat-value">{currentAmount} ETH</span>
+              <span className="stat-value">{displayCurrentAmount} ETH</span>
               <span className="stat-label">Raised</span>
             </div>
             <div className="stat-item">
-              <span className="stat-value">{targetAmount} ETH</span>
+              <span className="stat-value">{displayTargetAmount} ETH</span>
               <span className="stat-label">Goal</span>
             </div>
             <div className="stat-item">
