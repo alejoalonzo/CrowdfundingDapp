@@ -27,8 +27,8 @@ const Navbar = () => {
   
   const { account, loading, disconnectWallet } = useContext(CrowdfundingContext);
 
-  // Determine if we're on dashboard page
-  const isDashboard = pathname === '/dashboard';
+  // Determine if we're on dashboard page or campaign details page
+  const isDashboard = pathname === '/dashboard' || pathname.startsWith('/campaign/');
 
   // Handle mounting to avoid hydration errors
   useEffect(() => {

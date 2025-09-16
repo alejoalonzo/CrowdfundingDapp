@@ -671,6 +671,58 @@ export const CrowdfundingProvider = ({ children }) => {
     }
   };
 
+  // Add tier to campaign
+  const addTier = async (campaignAddress, tierName, tierAmountInEth) => {
+    try {
+      if (!contracts.signer) {
+        setError("Wallet not connected");
+        return false;
+      }
+
+      if (
+        !tierName.trim() ||
+        !tierAmountInEth ||
+        parseFloat(tierAmountInEth) <= 0
+      ) {
+        setError("All fields are required and amount must be greater than 0");
+        return false;
+      }
+
+      setLoading(true);
+      setError("");
+
+      // Create campaign contract instance
+      const campaignContract = new ethers.Contract(
+        campaignAddress,
+        Constants.CrowdfundingABI,
+        contracts.signer
+      );
+
+      const tierAmountInWei = ethers.parseEther(tierAmountInEth.toString());
+
+      console.log("Adding tier:", {
+        campaignAddress,
+        tierName,
+        tierAmountInEth,
+      });
+
+      const tx = await campaignContract.addTier(tierName, tierAmountInWei);
+
+      console.log("Transaction sent:", tx.hash);
+      await tx.wait();
+
+      console.log("Tier added successfully!");
+
+      setLoading(false);
+      return true;
+    } catch (error) {
+      console.error("Error adding tier:", error);
+      setLoading(false);
+      setError(`Error adding tier: ${error.reason || error.message}`);
+      return false;
+    }
+  };
+
   return (
     <CrowdfundingContext.Provider
       value={{
@@ -700,6 +752,7 @@ export const CrowdfundingProvider = ({ children }) => {
         createCampaign,
         fundCampaign,
         getCampaignDetails,
+        addTier,
 
         // Utils
         isBlockchainAvailable: isBlockchainAvailable(),

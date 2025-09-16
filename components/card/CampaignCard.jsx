@@ -1,5 +1,9 @@
-import React from 'react';
+"use client";
+
+import React, { useContext } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { CrowdfundingContext } from '../../context/CrowdfundingContext';
 
 const CampaignCard = ({ 
   title = "Revolutionary DeFi Platform", 
@@ -10,8 +14,13 @@ const CampaignCard = ({
   category = "DeFi",
   backers = "127",
   image = "/images/example.png",
-  owner = "0x123...abc"
+  owner = "0x123...abc",
+  campaignAddress = null, // Address for blockchain campaigns
+  context = "landing" // "landing" or "dashboard"
 }) => {
+  const router = useRouter();
+  const { account } = useContext(CrowdfundingContext);
+  
   // Safely parse numerical values
   const safeCurrentAmount = parseFloat(currentAmount || 0);
   const safeTargetAmount = parseFloat(targetAmount || 1);
@@ -21,6 +30,31 @@ const CampaignCard = ({
   const displayCurrentAmount = safeCurrentAmount.toFixed(2);
   const displayTargetAmount = safeTargetAmount.toFixed(2);
   const displayDaysLeft = daysLeft || "0";
+
+  // Determine if user owns this campaign
+  const isOwner = account && owner && (
+    owner.toLowerCase() === account.toLowerCase() ||
+    owner === `${account.slice(0, 6)}...${account.slice(-4)}`
+  );
+
+  // Determine button text and action
+  const getButtonConfig = () => {
+    if (context === "dashboard" && isOwner && campaignAddress) {
+      return {
+        text: "Edit Campaign",
+        action: () => router.push(`/campaign/${campaignAddress}`)
+      };
+    }
+    return {
+      text: "Fund Project",
+      action: () => {
+        // TODO: Implement funding logic
+        console.log("Fund project clicked");
+      }
+    };
+  };
+
+  const buttonConfig = getButtonConfig();
 
   return (
     <div className="campaign-card-modern group">
@@ -86,8 +120,11 @@ const CampaignCard = ({
         </div>
 
         {/* Action button */}
-        <button className="card-action-button">
-          <span className="button-text">Fund Project</span>
+        <button 
+          className="card-action-button"
+          onClick={buttonConfig.action}
+        >
+          <span className="button-text">{buttonConfig.text}</span>
           <div className="button-glow"></div>
           <svg className="button-arrow" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />

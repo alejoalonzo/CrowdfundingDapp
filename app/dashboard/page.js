@@ -217,6 +217,8 @@ const Dashboard = () => {
                     backers="--"
                     owner={account}
                     image="/images/example.png"
+                    campaignAddress={campaign.address}
+                    context="dashboard"
                   />
                 ))}
               </div>

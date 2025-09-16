@@ -106,7 +106,9 @@ const CampaignGrid = () => {
     category: "Community",
     backers: "--",
     image: "https://images.unsplash.com/photo-1620321023374-d1a68fbc720d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", // Blockchain/community default image
-    owner: `${campaign.owner.slice(0, 6)}...${campaign.owner.slice(-4)}`
+    owner: `${campaign.owner.slice(0, 6)}...${campaign.owner.slice(-4)}`,
+    campaignAddress: campaign.address,
+    context: "landing"
   });
 
   // Combine default campaigns with blockchain campaigns
@@ -193,6 +195,8 @@ const CampaignGrid = () => {
                 backers={campaign.backers}
                 image={campaign.image}
                 owner={campaign.owner}
+                campaignAddress={campaign.campaignAddress}
+                context={campaign.context || "landing"}
               />
             ))
           ) : (
