@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { CrowdfundingContext } from '../../context/CrowdfundingContext';
+import { FundCampaignPopup } from '../popup';
 
 const CampaignCard = ({ 
   title = "Revolutionary DeFi Platform", 
@@ -19,7 +20,11 @@ const CampaignCard = ({
   context = "landing" // "landing" or "dashboard"
 }) => {
   const router = useRouter();
-  const { account } = useContext(CrowdfundingContext);
+  const { account, getCampaignDetails, getSelectedTiers } = useContext(CrowdfundingContext);
+  
+  // State for popup
+  const [isFundPopupOpen, setIsFundPopupOpen] = useState(false);
+  const [campaignFullData, setCampaignFullData] = useState(null);
   
   // Safely parse numerical values
   const safeCurrentAmount = parseFloat(currentAmount || 0);
@@ -47,11 +52,40 @@ const CampaignCard = ({
     }
     return {
       text: "Fund Project",
-      action: () => {
-        // TODO: Implement funding logic
-        console.log("Fund project clicked");
-      }
+      action: handleFundProject
     };
+  };
+
+  // Handle fund project click
+  const handleFundProject = async () => {
+    if (!campaignAddress) {
+      console.log("Fund project clicked - Static campaign");
+      return;
+    }
+
+    try {
+      // Get full campaign details including tiers
+      const fullData = await getCampaignDetails(campaignAddress);
+      if (fullData) {
+        // Get selected tiers with their original indexes
+        const selectedTierIndexes = getSelectedTiers(campaignAddress);
+        const selectedTiersWithIndex = selectedTierIndexes.map(index => ({
+          ...fullData.tiers[index],
+          originalIndex: index
+        }));
+        
+        // Add selected tiers to campaign data
+        const campaignWithSelectedTiers = {
+          ...fullData,
+          tiers: selectedTiersWithIndex
+        };
+        
+        setCampaignFullData(campaignWithSelectedTiers);
+        setIsFundPopupOpen(true);
+      }
+    } catch (error) {
+      console.error("Error loading campaign for funding:", error);
+    }
   };
 
   const buttonConfig = getButtonConfig();
@@ -134,6 +168,13 @@ const CampaignCard = ({
 
       {/* Animated border */}
       <div className="card-border-animation"></div>
+
+      {/* Fund Campaign Popup */}
+      <FundCampaignPopup
+        isOpen={isFundPopupOpen}
+        onClose={() => setIsFundPopupOpen(false)}
+        campaign={campaignFullData}
+      />
     </div>
   );
 };

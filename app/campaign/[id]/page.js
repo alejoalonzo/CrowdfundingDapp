@@ -20,8 +20,15 @@ const CampaignDetails = () => {
   const router = useRouter();
   const campaignId = params.id;
 
-  const { account, getCampaignDetails, removeTier, loading, error } =
-    useContext(CrowdfundingContext);
+  const {
+    account,
+    getCampaignDetails,
+    removeTier,
+    loading,
+    error,
+    selectTier,
+    isSelected,
+  } = useContext(CrowdfundingContext);
 
   const [campaignData, setCampaignData] = useState(null);
   const [mounted, setMounted] = useState(false);
@@ -140,8 +147,9 @@ const CampaignDetails = () => {
   };
 
   const handleSelectTier = tierIndex => {
-    // TODO: Implement tier selection functionality
-    console.log("Tier selected:", tierIndex);
+    if (campaignData?.address) {
+      selectTier(campaignData.address, tierIndex);
+    }
   };
 
   return (
@@ -347,10 +355,18 @@ const CampaignDetails = () => {
                       <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">
                         <button
                           onClick={() => handleSelectTier(index)}
-                          className="px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border border-green-100 text-green-700 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 shadow-sm hover:shadow-md"
+                          className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 shadow-sm hover:shadow-md ${
+                            isSelected(campaignData?.address, index)
+                              ? "bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-100 text-blue-700"
+                              : "bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border border-green-100 text-green-700"
+                          }`}
                         >
                           <HiCheckCircle className="h-4 w-4" />
-                          <span>Select</span>
+                          <span>
+                            {isSelected(campaignData?.address, index)
+                              ? "Selected"
+                              : "Select"}
+                          </span>
                         </button>
 
                         <button

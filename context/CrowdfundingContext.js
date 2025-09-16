@@ -24,6 +24,9 @@ export const CrowdfundingProvider = ({ children }) => {
   const [userCampaigns, setUserCampaigns] = useState([]);
   const [campaignsLoading, setCampaignsLoading] = useState(false);
 
+  // Selected tiers state - stores which tiers are selected for each campaign
+  const [selectedTiers, setSelectedTiers] = useState({});
+
   // Dynamic imports state
   const [ethers, setEthers] = useState(null);
   const [Constants, setConstants] = useState(null);
@@ -768,6 +771,44 @@ export const CrowdfundingProvider = ({ children }) => {
     }
   };
 
+  // ===== TIER SELECTION FUNCTIONS =====
+
+  const selectTier = useCallback((campaignAddress, tierIndex) => {
+    setSelectedTiers(prev => {
+      const campaignTiers = prev[campaignAddress] || [];
+      const isAlreadySelected = campaignTiers.includes(tierIndex);
+
+      if (isAlreadySelected) {
+        // Remove from selection
+        return {
+          ...prev,
+          [campaignAddress]: campaignTiers.filter(idx => idx !== tierIndex),
+        };
+      } else {
+        // Add to selection
+        return {
+          ...prev,
+          [campaignAddress]: [...campaignTiers, tierIndex],
+        };
+      }
+    });
+  }, []);
+
+  const getSelectedTiers = useCallback(
+    campaignAddress => {
+      return selectedTiers[campaignAddress] || [];
+    },
+    [selectedTiers]
+  );
+
+  const isSelected = useCallback(
+    (campaignAddress, tierIndex) => {
+      const campaignSelectedTiers = selectedTiers[campaignAddress] || [];
+      return campaignSelectedTiers.includes(tierIndex);
+    },
+    [selectedTiers]
+  );
+
   return (
     <CrowdfundingContext.Provider
       value={{
@@ -799,6 +840,12 @@ export const CrowdfundingProvider = ({ children }) => {
         getCampaignDetails,
         addTier,
         removeTier,
+
+        // Tier selection functions
+        selectTier,
+        getSelectedTiers,
+        isSelected,
+        selectedTiers,
 
         // Utils
         isBlockchainAvailable: isBlockchainAvailable(),
