@@ -11,6 +11,8 @@ import {
   HiTrendingUp,
   HiCog,
   HiArrowLeft,
+  HiTrash,
+  HiCheckCircle,
 } from "react-icons/hi";
 
 const CampaignDetails = () => {
@@ -18,7 +20,7 @@ const CampaignDetails = () => {
   const router = useRouter();
   const campaignId = params.id;
 
-  const { account, getCampaignDetails, loading, error } =
+  const { account, getCampaignDetails, removeTier, loading, error } =
     useContext(CrowdfundingContext);
 
   const [campaignData, setCampaignData] = useState(null);
@@ -121,6 +123,25 @@ const CampaignDetails = () => {
       setCampaignData(data);
       setLoadingCampaign(false);
     }
+  };
+
+  const handleRemoveTier = async tierIndex => {
+    if (
+      window.confirm(
+        "Are you sure you want to remove this tier? This action cannot be undone."
+      )
+    ) {
+      const success = await removeTier(campaignId, tierIndex);
+      if (success) {
+        // Reload campaign data to update the tiers list
+        handleTierAdded(); // Reusing the same reload function
+      }
+    }
+  };
+
+  const handleSelectTier = tierIndex => {
+    // TODO: Implement tier selection functionality
+    console.log("Tier selected:", tierIndex);
   };
 
   return (
@@ -303,8 +324,8 @@ const CampaignDetails = () => {
                       key={index}
                       className="border border-gray-200 rounded-lg p-6"
                     >
-                      <div className="flex justify-between items-start">
-                        <div>
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1">
                           <h4 className="font-semibold text-lg text-gray-900 mb-2">
                             {tier.name}
                           </h4>
@@ -320,6 +341,26 @@ const CampaignDetails = () => {
                             {tier.backers} backers
                           </p>
                         </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">
+                        <button
+                          onClick={() => handleSelectTier(index)}
+                          className="px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border border-green-100 text-green-700 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 shadow-sm hover:shadow-md"
+                        >
+                          <HiCheckCircle className="h-4 w-4" />
+                          <span>Select</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleRemoveTier(index)}
+                          disabled={loading}
+                          className="px-4 py-2 bg-gradient-to-r from-red-50 to-rose-50 hover:from-red-100 hover:to-rose-100 border border-red-100 disabled:from-gray-50 disabled:to-gray-50 disabled:border-gray-200 text-red-700 disabled:text-gray-400 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 shadow-sm hover:shadow-md disabled:cursor-not-allowed"
+                        >
+                          <HiTrash className="h-4 w-4" />
+                          <span>Remove</span>
+                        </button>
                       </div>
                     </div>
                   ))}

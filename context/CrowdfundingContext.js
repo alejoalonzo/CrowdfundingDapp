@@ -723,6 +723,51 @@ export const CrowdfundingProvider = ({ children }) => {
     }
   };
 
+  // Remove tier from campaign
+  const removeTier = async (campaignAddress, tierIndex) => {
+    try {
+      if (!contracts.signer) {
+        setError("Wallet not connected");
+        return false;
+      }
+
+      if (tierIndex < 0) {
+        setError("Invalid tier index");
+        return false;
+      }
+
+      setLoading(true);
+      setError("");
+
+      // Create campaign contract instance
+      const campaignContract = new ethers.Contract(
+        campaignAddress,
+        Constants.CrowdfundingABI,
+        contracts.signer
+      );
+
+      console.log("Removing tier:", {
+        campaignAddress,
+        tierIndex,
+      });
+
+      const tx = await campaignContract.removeTier(tierIndex);
+
+      console.log("Transaction sent:", tx.hash);
+      await tx.wait();
+
+      console.log("Tier removed successfully!");
+
+      setLoading(false);
+      return true;
+    } catch (error) {
+      console.error("Error removing tier:", error);
+      setLoading(false);
+      setError(`Error removing tier: ${error.reason || error.message}`);
+      return false;
+    }
+  };
+
   return (
     <CrowdfundingContext.Provider
       value={{
@@ -753,6 +798,7 @@ export const CrowdfundingProvider = ({ children }) => {
         fundCampaign,
         getCampaignDetails,
         addTier,
+        removeTier,
 
         // Utils
         isBlockchainAvailable: isBlockchainAvailable(),
