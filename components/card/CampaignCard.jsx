@@ -20,7 +20,7 @@ const CampaignCard = ({
   context = "landing" // "landing" or "dashboard"
 }) => {
   const router = useRouter();
-  const { account, getCampaignDetails, getSelectedTiers } = useContext(CrowdfundingContext);
+  const { account, getCampaignDetails } = useContext(CrowdfundingContext);
   
   // State for popup
   const [isFundPopupOpen, setIsFundPopupOpen] = useState(false);
@@ -67,30 +67,17 @@ const CampaignCard = ({
       // Get full campaign details including tiers
       const fullData = await getCampaignDetails(campaignAddress);
       if (fullData) {
-        // Get selected tiers with their original indexes
-        const selectedTierIndexes = getSelectedTiers(campaignAddress);
-        
-        let tiersToShow;
-        if (selectedTierIndexes.length > 0) {
-          // Show only selected tiers if any are selected
-          tiersToShow = selectedTierIndexes.map(index => ({
-            ...fullData.tiers[index],
-            originalIndex: index
-          }));
-        } else {
-          // Show all tiers if none are selected (for new users/browsers)
-          tiersToShow = fullData.tiers.map((tier, index) => ({
-            ...tier,
-            originalIndex: index
-          }));
-        }
+        // Show all tiers with their original indexes
+        const tiersToShow = fullData.tiers.map((tier, index) => ({
+          ...tier,
+          originalIndex: index
+        }));
         
         // Add tiers to campaign data
         const campaignWithTiers = {
           ...fullData,
           tiers: tiersToShow,
-          allTiersCount: fullData.tiers.length,
-          hasSelectedTiers: selectedTierIndexes.length > 0
+          allTiersCount: fullData.tiers.length
         };
         
         setCampaignFullData(campaignWithTiers);

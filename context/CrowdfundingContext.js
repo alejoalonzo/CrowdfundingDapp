@@ -777,7 +777,7 @@ export const CrowdfundingProvider = ({ children }) => {
     }
   };
 
-  // ===== TIER SELECTION FUNCTIONS =====
+  // ===== TIER SELECTION FUNCTIONS (LEGACY LOCAL STORAGE) =====
 
   const selectTier = useCallback((campaignAddress, tierIndex) => {
     console.log("selectTier called:", { campaignAddress, tierIndex });
@@ -884,7 +884,7 @@ export const CrowdfundingProvider = ({ children }) => {
         addTier,
         removeTier,
 
-        // Tier selection functions
+        // Tier selection functions (legacy local storage)
         selectTier,
         getSelectedTiers,
         isSelected,
