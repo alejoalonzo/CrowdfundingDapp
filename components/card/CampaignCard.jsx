@@ -4,7 +4,7 @@ import React, { useContext, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { CrowdfundingContext } from '../../context/CrowdfundingContext';
-import { FundCampaignPopup } from '../popup';
+import { FundCampaignPopup, WalletPopup } from '../popup';
 
 const CampaignCard = ({ 
   title = "Revolutionary DeFi Platform", 
@@ -22,8 +22,9 @@ const CampaignCard = ({
   const router = useRouter();
   const { account, getCampaignDetails } = useContext(CrowdfundingContext);
   
-  // State for popup
+  // State for popups
   const [isFundPopupOpen, setIsFundPopupOpen] = useState(false);
+  const [isWalletPopupOpen, setIsWalletPopupOpen] = useState(false);
   const [campaignFullData, setCampaignFullData] = useState(null);
   
   // Safely parse numerical values
@@ -58,6 +59,12 @@ const CampaignCard = ({
 
   // Handle fund project click
   const handleFundProject = async () => {
+    // If wallet is not connected, show wallet popup first
+    if (!account) {
+      setIsWalletPopupOpen(true);
+      return;
+    }
+
     if (!campaignAddress) {
       console.log("Fund project clicked - Static campaign");
       return;
@@ -174,6 +181,12 @@ const CampaignCard = ({
         isOpen={isFundPopupOpen}
         onClose={() => setIsFundPopupOpen(false)}
         campaign={campaignFullData}
+      />
+
+      {/* Wallet Connection Popup */}
+      <WalletPopup
+        isOpen={isWalletPopupOpen}
+        onClose={() => setIsWalletPopupOpen(false)}
       />
     </div>
   );
