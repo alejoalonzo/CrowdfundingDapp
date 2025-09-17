@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useContext } from 'react';
+import { createPortal } from 'react-dom';
 import { HiX, HiClock, HiTrendingUp, HiCollection, HiCurrencyDollar } from 'react-icons/hi';
 import { CrowdfundingContext } from '../../context/CrowdfundingContext';
 
@@ -9,6 +10,12 @@ const FundCampaignPopup = ({ isOpen, onClose, campaign }) => {
   
   const [selectedTier, setSelectedTier] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Check if component is mounted (client-side only)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close popup on Escape key
   useEffect(() => {
@@ -118,15 +125,16 @@ const FundCampaignPopup = ({ isOpen, onClose, campaign }) => {
     e.stopPropagation();
   };
 
-  if (!isOpen || !campaign) return null;
+  if (!isOpen || !campaign || !mounted) return null;
 
   // Filter selected tiers (for now, we'll show all tiers as we need to implement the selection logic)
   const selectedTiers = campaign.tiers || [];
 
-  return (
+  const popupContent = (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      className="popup-overlay fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={handleBackdropClick}
+      style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh' }}
     >
       <div 
         className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all"
@@ -365,6 +373,8 @@ const FundCampaignPopup = ({ isOpen, onClose, campaign }) => {
       </div>
     </div>
   );
+
+  return createPortal(popupContent, document.body);
 };
 
 export default FundCampaignPopup;
