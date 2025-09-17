@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useContext, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   HiX, 
   HiCreditCard, 
@@ -21,6 +22,13 @@ const WalletPopup = ({ isOpen, onClose }) => {
     setError,
     isBlockchainAvailable
   } = useContext(CrowdfundingContext);
+
+  const [mounted, setMounted] = useState(false);
+
+  // Check if component is mounted (client-side only)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close popup on Escape key
   useEffect(() => {
@@ -102,13 +110,13 @@ const WalletPopup = ({ isOpen, onClose }) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  const popupContent = (
     <>
       {/* Overlay con mejor blur y gradiente - CENTRADO VERTICALMENTE */}
       <div 
-        className="fixed inset-0 z-[100] transition-all duration-300 flex items-center justify-center p-4"
+        className="fixed inset-0 z-[9999] transition-all duration-300 flex items-center justify-center p-4"
         style={{
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
@@ -472,6 +480,8 @@ const WalletPopup = ({ isOpen, onClose }) => {
       </div>
     </>
   );
+
+  return createPortal(popupContent, document.body);
 };
 
 export default WalletPopup;
