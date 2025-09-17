@@ -1,12 +1,25 @@
 "use client";
 
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { CrowdfundingContext } from "../../context/CrowdfundingContext";
 import { HiPlus, HiCollection, HiCube, HiTrendingUp } from "react-icons/hi";
 import { CampaignCard } from "../../components/card";
 
-const Dashboard = () => {
+// Loading component for Suspense boundary
+const DashboardLoading = () => (
+  <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-[#19d8f7]/5 pt-24">
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#51256b] mx-auto"></div>
+        <p className="text-gray-600 mt-4">Loading...</p>
+      </div>
+    </div>
+  </div>
+);
+
+// Dashboard content component that uses useSearchParams
+const DashboardContent = () => {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState("my-campaigns");
   const [mounted, setMounted] = useState(false);
@@ -426,6 +439,15 @@ const Dashboard = () => {
         )}
       </div>
     </div>
+  );
+};
+
+// Main Dashboard component wrapped with Suspense
+const Dashboard = () => {
+  return (
+    <Suspense fallback={<DashboardLoading />}>
+      <DashboardContent />
+    </Suspense>
   );
 };
 
